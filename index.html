@@ -4206,6 +4206,17 @@
     if(oldCard.querySelectorAll('.prov-cell-btn').length === 0) oldCard.remove();
   }
 
+  // Expose prov functions to global scope (required for inline onclick handlers)
+  window.toggleProvCard    = toggleProvCard;
+  window.toggleProvPagados = toggleProvPagados;
+  window.toggleProvCell    = toggleProvCell;
+  window.markAllProv       = markAllProv;
+  window.openEditProv      = openEditProv;
+  window.pickProv          = pickProv;
+  window.showProvNuevo     = showProvNuevo;
+  window.confirmProvNuevo  = confirmProvNuevo;
+  window.closePicker       = closePicker;
+
   // ======================================================
   // ANÁLISIS PANEL (Proyectos aprobados)
   // ======================================================
