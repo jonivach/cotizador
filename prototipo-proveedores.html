@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prototipo Proveedores</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper:#FFFFFF; --paper-dim:#F5F5F5; --ink:#0A0A0A; --ink-soft:#666666;
+  --line:#E2E2E2; --card:#FAFAFA; --card-hover:#F1F1F1;
+  --cyan:#0E8F74; --cyan-bg:#E6F7F2; --cyan-dark:#0A6B57;
+  --bad:#C0392B; --bad-bg:#FDECEA;
+  --yellow:#B98E00; --yellow-bg:#FFF6D9;
+  --good:#0E8F74; --good-bg:#E6F7F2;
+  --radius:14px;
+}
+* { box-sizing:border-box; margin:0; padding:0; }
+body { font-family:'Space Grotesk',sans-serif; background:#F0F0F0; color:var(--ink); -webkit-font-smoothing:antialiased; padding:24px; }
+
+.page { max-width:900px; margin:0 auto; }
+h2 { font-size:22px; font-weight:700; letter-spacing:-.02em; }
+.sub { font-size:13px; color:var(--ink-soft); margin-top:2px; }
+.page-head { margin-bottom:20px; }
+
+.stat-strip { display:flex; gap:12px; margin-bottom:24px; flex-wrap:wrap; }
+.stat { background:var(--paper); border:1px solid var(--line); border-radius:var(--radius); padding:14px 18px; flex:1; min-width:120px; }
+.stat .lbl { font-size:10px; text-transform:uppercase; letter-spacing:.07em; color:var(--ink-soft); font-weight:600; margin-bottom:4px; }
+.stat .val { font-size:20px; font-weight:700; letter-spacing:-.02em; }
+
+/* Cards pendientes */
+.prov-cards { display:flex; flex-direction:column; gap:12px; }
+
+.prov-card {
+  background:var(--paper);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  transition: opacity .3s, transform .3s;
+}
+.prov-card-head { border-radius:var(--radius) var(--radius) 0 0; overflow:hidden; }
+.prov-card-footer { border-radius:0 0 var(--radius) var(--radius); overflow:hidden; }
+.prov-card-head {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:14px 18px; cursor:pointer; user-select:none; gap:12px;
+}
+.prov-card-head:hover { background:var(--card-hover); }
+.prov-name { font-size:14px; font-weight:700; }
+.prov-meta { font-size:11px; color:var(--ink-soft); margin-top:1px; }
+
+.prov-pill-wrap { display:flex; align-items:center; gap:10px; }
+.prov-total-pill {
+  font-size:13px; font-weight:700; padding:5px 12px;
+  border-radius:8px; white-space:nowrap;
+}
+.prov-total-pill.has-pend { background:var(--bad-bg); color:var(--bad); }
+.prov-total-pill.all-paid { background:var(--good-bg); color:var(--cyan-dark); }
+.prov-pend-label { font-size:11px; color:var(--bad); white-space:nowrap; }
+
+.chevron { font-size:12px; color:var(--ink-soft); transition:.2s; }
+.prov-card.open .chevron { transform:rotate(180deg); }
+
+.prov-card-body { display:none; border-top:1px solid var(--line); }
+.prov-card.open .prov-card-body { display:block; }
+
+.proj-row {
+  display:grid; grid-template-columns:1fr auto auto; align-items:center;
+  gap:8px; padding:10px 18px; border-bottom:1px solid var(--line);
+}
+.proj-row:last-child { border-bottom:none; }
+.proj-row:hover { background:var(--card); }
+.proj-name { font-size:12px; font-weight:600; }
+.proj-num { font-size:11px; color:var(--ink-soft); }
+
+.cell-btn {
+  border:none; border-radius:8px; padding:6px 12px;
+  font-size:11px; font-weight:700; cursor:pointer;
+  font-family:'Space Grotesk',sans-serif; white-space:nowrap;
+  min-width:95px; text-align:center; transition:.15s;
+}
+.cell-btn.pend { background:var(--yellow-bg); color:var(--yellow); }
+.cell-btn.pend:hover { background:#FFE99A; }
+.cell-btn.paid { background:var(--good-bg); color:var(--cyan-dark); }
+.cell-btn.paid:hover { background:#BEF0E0; }
+
+/* Edit proveedor por ítem */
+.proj-row { position:relative; }
+.edit-prov-btn {
+  opacity:0; background:none; border:none; cursor:pointer;
+  color:var(--ink-soft); font-size:12px; padding:2px 6px;
+  border-radius:5px; transition:.15s; line-height:1;
+}
+.proj-row:hover .edit-prov-btn { opacity:1; }
+.edit-prov-btn:hover { background:var(--line); color:var(--ink); }
+
+.inline-edit-wrap { display:none; }
+.inline-edit-wrap.active {
+  display:block;
+  padding:10px 18px 12px; background:var(--cyan-bg);
+  border-top:1px solid #BEE8DC; border-bottom:1px solid #BEE8DC;
+}
+.picker-label { font-size:10px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-soft); font-weight:600; display:block; margin-bottom:8px; }
+.picker-chips { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:6px; }
+.picker-chip {
+  background:var(--paper); border:1px solid var(--line); border-radius:20px;
+  padding:5px 14px; font-size:12px; font-weight:600; cursor:pointer;
+  font-family:'Space Grotesk',sans-serif; color:var(--ink); transition:.15s;
+}
+.picker-chip:hover { background:var(--cyan-bg); border-color:var(--cyan); color:var(--cyan); }
+.picker-chip.picker-nuevo { color:var(--cyan); border-color:var(--cyan); }
+.picker-chip.picker-nuevo:hover { background:var(--cyan); color:white; }
+.picker-chip.picker-cancel-btn { color:var(--ink-soft); font-size:11px; padding:5px 10px; }
+.picker-nuevo-row { display:none; align-items:center; gap:8px; margin-top:8px; }
+.picker-input {
+  flex:1; border:1px solid var(--line); border-radius:8px;
+  padding:7px 12px; font-size:12px; font-family:'Space Grotesk',sans-serif;
+  background:var(--paper); color:var(--ink); outline:none;
+}
+.picker-input:focus { border-color:var(--cyan); }
+.picker-btn-mover {
+  background:var(--cyan); color:white; border:none; border-radius:8px;
+  padding:7px 16px; font-size:12px; font-weight:700; cursor:pointer;
+  font-family:'Space Grotesk',sans-serif; white-space:nowrap;
+}
+
+.prov-card-footer {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:10px 18px; background:var(--paper-dim); border-top:1px solid var(--line);
+}
+.mark-all-btn {
+  font-size:11px; font-weight:700; border:none;
+  background:var(--cyan); color:white; border-radius:8px;
+  padding:6px 14px; cursor:pointer; font-family:'Space Grotesk',sans-serif; transition:.15s;
+}
+.mark-all-btn:hover { background:var(--cyan-dark); }
+.mark-all-btn:disabled { background:var(--line); color:var(--ink-soft); cursor:default; }
+.footer-total { font-size:13px; font-weight:700; text-align:right; }
+.footer-pend { font-size:11px; color:var(--bad); margin-top:1px; }
+
+/* Sección pagados */
+.pagados-section { margin-top:24px; }
+.pagados-toggle {
+  display:flex; align-items:center; gap:8px; cursor:pointer;
+  padding:10px 14px; border-radius:10px; user-select:none;
+  color:var(--ink-soft); font-size:12px; font-weight:600;
+  border:1px dashed var(--line); background:var(--paper);
+  transition:.15s;
+}
+.pagados-toggle:hover { background:var(--card-hover); }
+.pagados-toggle .count-badge {
+  background:var(--good-bg); color:var(--cyan-dark);
+  font-size:11px; font-weight:700; border-radius:6px; padding:2px 8px;
+}
+.pagados-toggle .chev { margin-left:auto; font-size:11px; transition:.2s; }
+.pagados-section.open .pagados-toggle .chev { transform:rotate(180deg); }
+
+.pagados-list { display:none; flex-direction:column; gap:8px; margin-top:10px; }
+.pagados-section.open .pagados-list { display:flex; }
+
+/* Card pagada (dentro de pagados-list) */
+.prov-card.is-paid {
+  border-color:var(--line);
+  opacity:.75;
+}
+.prov-card.is-paid .prov-card-head:hover { background:var(--card); }
+.prov-card.is-paid .prov-name { color:var(--ink-soft); }
+
+/* Resumen por proyecto */
+.proj-summary { margin-bottom:20px; overflow-x:auto; }
+.proj-summary-table { border-collapse:collapse; width:100%; font-size:12px; }
+.proj-summary-table th {
+  padding:8px 14px; text-align:left;
+  font-size:9px; text-transform:uppercase; letter-spacing:.07em;
+  color:var(--ink-soft); font-weight:700;
+  border-bottom:2px solid var(--line);
+  background:var(--paper); white-space:nowrap;
+}
+.proj-summary-table th:last-child, .proj-summary-table td:last-child { text-align:right; }
+.proj-summary-table td {
+  padding:9px 14px; border-bottom:1px solid var(--line);
+  vertical-align:middle; background:var(--paper);
+}
+.proj-summary-table tr:last-child td { border-bottom:none; }
+.proj-summary-table tr:hover td { background:var(--card); }
+.proj-num-tag { font-size:10px; color:var(--ink-soft); margin-left:6px; }
+.proj-bar-wrap { display:flex; align-items:center; gap:8px; min-width:100px; }
+.proj-bar { height:6px; border-radius:3px; background:var(--line); flex:1; overflow:hidden; }
+.proj-bar-fill { height:100%; border-radius:3px; background:var(--bad); transition:.3s; }
+.proj-bar-fill.done { background:var(--good); }
+.proj-total-cell { font-weight:700; white-space:nowrap; }
+.proj-pend-cell { font-size:11px; color:var(--bad); white-space:nowrap; }
+
+/* animación salida */
+@keyframes slideOut {
+  from { opacity:1; transform:translateY(0); max-height:400px; }
+  to   { opacity:0; transform:translateY(-8px); max-height:0; overflow:hidden; }
+}
+.prov-card.leaving {
+  animation: slideOut .35s ease forwards;
+  pointer-events:none;
+}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="page-head">
+    <h2>Proveedores</h2>
+    <div class="sub">Compras generadas automáticamente al aprobar proyectos.</div>
+  </div>
+
+  <div class="stat-strip">
+    <div class="stat"><div class="lbl">Pendiente de pago</div><div class="val" id="statPend" style="color:var(--bad);">$ 1.628.763</div></div>
+    <div class="stat"><div class="lbl">Ítems a pagar</div><div class="val" id="statItems">9</div></div>
+    <div class="stat"><div class="lbl">Pagado este mes</div><div class="val" id="statPagado" style="color:var(--good);">$ 237.000</div></div>
+    <div class="stat"><div class="lbl">Proveedores activos</div><div class="val" id="statProvCount">3</div></div>
+  </div>
+
+  <!-- Resumen por proyecto -->
+  <div class="proj-summary">
+    <table class="proj-summary-table">
+      <thead>
+        <tr>
+          <th>Proyecto</th>
+          <th>Cot.</th>
+          <th>Pagado</th>
+          <th>Pendiente</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr data-summary-proj="Empresa Rápida S.A.">
+          <td><strong>Empresa Rápida S.A.</strong></td>
+          <td style="color:var(--ink-soft);">Cot-048</td>
+          <td>
+            <div class="proj-bar-wrap">
+              <div class="proj-bar"><div class="proj-bar-fill" style="width:2%"></div></div>
+              <span style="font-size:11px;color:var(--ink-soft);">2%</span>
+            </div>
+          </td>
+          <td class="proj-pend-cell">$ 691.620</td>
+          <td class="proj-total-cell">$ 703.620</td>
+        </tr>
+        <tr data-summary-proj="Pinkerton Co.">
+          <td><strong>Pinkerton Co.</strong></td>
+          <td style="color:var(--ink-soft);">Cot-045</td>
+          <td>
+            <div class="proj-bar-wrap">
+              <div class="proj-bar"><div class="proj-bar-fill" style="width:6%"></div></div>
+              <span style="font-size:11px;color:var(--ink-soft);">6%</span>
+            </div>
+          </td>
+          <td class="proj-pend-cell">$ 390.100</td>
+          <td class="proj-total-cell">$ 416.943</td>
+        </tr>
+        <tr data-summary-proj="Strick Ltd.">
+          <td><strong>Strick Ltd.</strong></td>
+          <td style="color:var(--ink-soft);">Cot-041</td>
+          <td>
+            <div class="proj-bar-wrap">
+              <div class="proj-bar"><div class="proj-bar-fill" style="width:3%"></div></div>
+              <span style="font-size:11px;color:var(--ink-soft);">3%</span>
+            </div>
+          </td>
+          <td class="proj-pend-cell">$ 273.300</td>
+          <td class="proj-total-cell">$ 283.300</td>
+        </tr>
+        <tr data-summary-proj="Max58">
+          <td><strong>Max58</strong></td>
+          <td style="color:var(--ink-soft);">Cot-044</td>
+          <td>
+            <div class="proj-bar-wrap">
+              <div class="proj-bar"><div class="proj-bar-fill done" style="width:100%"></div></div>
+              <span style="font-size:11px;color:var(--good);">100%</span>
+            </div>
+          </td>
+          <td class="proj-pend-cell" style="color:var(--good);">—</td>
+          <td class="proj-total-cell">$ 10.000</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Cards pendientes -->
+  <div class="prov-cards" id="pendCards">
+
+    <!-- Maca -->
+    <div class="prov-card open" data-prov="Maca" data-total="503200">
+      <div class="prov-card-head" onclick="toggleCard(this)">
+        <div>
+          <div class="prov-name">Maca</div>
+          <div class="prov-meta">3 proyectos · 3 ítems</div>
+        </div>
+        <div class="prov-pill-wrap">
+          <div>
+            <div class="prov-total-pill has-pend">$ 503.200</div>
+            <div class="prov-pend-label" style="text-align:right;margin-top:3px;">$ 503.200 pend.</div>
+          </div>
+          <div class="chevron">▾</div>
+        </div>
+      </div>
+      <div class="prov-card-body">
+        <div class="proj-row" data-proj="Empresa Rápida S.A.">
+          <div><div class="proj-name">Empresa Rápida S.A.</div><div class="proj-num">Cot-048</div></div>
+          <button class="cell-btn pend" onclick="toggleCell(this)">$ 180.000</button>
+          <button class="edit-prov-btn" onclick="openEditProv(this)" title="Cambiar proveedor">✎</button>
+        </div>
+        <div class="inline-edit-wrap">
+          <span class="inline-edit-label">Mover a:</span>
+          <input class="inline-edit-input" type="text" list="prov-datalist" placeholder="Nombre del proveedor — Enter para confirmar">
+          <button class="inline-edit-cancel" onclick="cancelEditProv(this)">Cancelar</button>
+        </div>
+        <div class="proj-row" data-proj="Pinkerton Co.">
+          <div><div class="proj-name">Pinkerton Co.</div><div class="proj-num">Cot-045</div></div>
+          <button class="cell-btn pend" onclick="toggleCell(this)">$ 220.000</button>
+          <button class="edit-prov-btn" onclick="openEditProv(this)" title="Cambiar proveedor">✎</button>
+        </div>
+        <div class="inline-edit-wrap">
+          <span class="inline-edit-label">Mover a:</span>
+          <input class="inline-edit-input" type="text" list="prov-datalist" placeholder="Nombre del proveedor — Enter para confirmar">
+          <button class="inline-edit-cancel" onclick="cancelEditProv(this)">Cancelar</button>
+        </div>
+        <div class="proj-row" data-proj="Strick Ltd.">
+          <div><div class="proj-name">Strick Ltd.</div><div class="proj-num">Cot-041</div></div>
+          <button class="cell-btn pend" onclick="toggleCell(this)">$ 103.200</button>
+          <button class="edit-prov-btn" onclick="openEditProv(this)" title="Cambiar proveedor">✎</button>
+        </div>
+        <div class="inline-edit-wrap">
+          <span class="inline-edit-label">Mover a:</span>
+          <input class="inline-edit-input" type="text" list="prov-datalist" placeholder="Nombre del proveedor — Enter para confirmar">
+          <button class="inline-edit-cancel" onclick="cancelEditProv(this)">Cancelar</button>
+        </div>
+      </div>
+      <div class="prov-card-footer">
+        <button class="mark-all-btn" onclick="markAll(this)">Marcar todo pagado</button>
+      </div>
+    </div>
+
+    <!-- Casa Victor -->
+    <div class="prov-card open" data-prov="Casa Victor" data-total="417043">
+      <div class="prov-card-head" onclick="toggleCard(this)">
+        <div>
+          <div class="prov-name">Casa Victor</div>
+          <div class="prov-meta">3 proyectos · 3 ítems</div>
+        </div>
+        <div class="prov-pill-wrap">
+          <div>
+            <div class="prov-total-pill has-pend">$ 417.043</div>
+            <div class="prov-pend-label" style="text-align:right;margin-top:3px;">$ 410.100 pend.</div>
+          </div>
+          <div class="chevron">▾</div>
+        </div>
+      </div>
+      <div class="prov-card-body">
+        <div class="proj-row" data-proj="Empresa Rápida S.A.">
+          <div><div class="proj-name">Empresa Rápida S.A.</div><div class="proj-num">Cot-048</div></div>
+          <button class="cell-btn pend" onclick="toggleCell(this)">$ 240.000</button>
+          <button class="edit-prov-btn" onclick="openEditProv(this)" title="Cambiar proveedor">✎</button>
+        </div>
+        <div class="inline-edit-wrap">
+          <span class="inline-edit-label">Mover a:</span>
+          <input class="inline-edit-input" type="text" list="prov-datalist" placeholder="Nombre del proveedor — Enter para confirmar">
+          <button class="inline-edit-cancel" onclick="cancelEditProv(this)">Cancelar</button>
+        </div>
+        <div class="proj-row" data-proj="Strick Ltd.">
+          <div><div class="proj-name">Strick Ltd.</div><div class="proj-num">Cot-041</div></div>
+          <button class="cell-btn pend" onclick="toggleCell(this)">$ 170.100</button>
+          <button class="edit-prov-btn" onclick="openEditProv(this)" title="Cambiar proveedor">✎</button>
+        </div>
+        <div class="inline-edit-wrap">
+          <span class="inline-edit-label">Mover a:</span>
+          <input class="inline-edit-input" type="text" list="prov-datalist" placeholder="Nombre del proveedor — Enter para confirmar">
+          <button class="inline-edit-cancel" onclick="cancelEditProv(this)">Cancelar</button>
+        </div>
+        <div class="proj-row" data-proj="Pinkerton Co.">
+          <div><div class="proj-name">Pinkerton Co.</div><div class="proj-num">Cot-045</div></div>
+          <button class="cell-btn paid" onclick="toggleCell(this)">✓ $ 6.943</button>
+          <button class="edit-prov-btn" onclick="openEditProv(this)" title="Cambiar proveedor">✎</button>
+        </div>
+        <div class="inline-edit-wrap">
+          <span class="inline-edit-label">Mover a:</span>
+          <input class="inline-edit-input" type="text" list="prov-datalist" placeholder="Nombre del proveedor — Enter para confirmar">
+          <button class="inline-edit-cancel" onclick="cancelEditProv(this)">Cancelar</button>
+        </div>
+      </div>
+      <div class="prov-card-footer">
+        <button class="mark-all-btn" onclick="markAll(this)">Marcar todo pagado</button>
+      </div>
+    </div>
+
+    <!-- LHS Cromado -->
+    <div class="prov-card open" data-prov="LHS Cromado" data-total="271620">
+      <div class="prov-card-head" onclick="toggleCard(this)">
+        <div>
+          <div class="prov-name">LHS Cromado</div>
+          <div class="prov-meta">1 proyecto · 1 ítem</div>
+        </div>
+        <div class="prov-pill-wrap">
+          <div>
+            <div class="prov-total-pill has-pend">$ 271.620</div>
+            <div class="prov-pend-label" style="text-align:right;margin-top:3px;">$ 271.620 pend.</div>
+          </div>
+          <div class="chevron">▾</div>
+        </div>
+      </div>
+      <div class="prov-card-body">
+        <div class="proj-row" data-proj="Empresa Rápida S.A.">
+          <div><div class="proj-name">Empresa Rápida S.A.</div><div class="proj-num">Cot-048</div></div>
+          <button class="cell-btn pend" onclick="toggleCell(this)">$ 271.620</button>
+          <button class="edit-prov-btn" onclick="openEditProv(this)" title="Cambiar proveedor">✎</button>
+        </div>
+        <div class="inline-edit-wrap">
+          <span class="inline-edit-label">Mover a:</span>
+          <input class="inline-edit-input" type="text" list="prov-datalist" placeholder="Nombre del proveedor — Enter para confirmar">
+          <button class="inline-edit-cancel" onclick="cancelEditProv(this)">Cancelar</button>
+        </div>
+      </div>
+      <div class="prov-card-footer">
+        <button class="mark-all-btn" onclick="markAll(this)">Marcar todo pagado</button>
+      </div>
+    </div>
+
+  </div><!-- /pendCards -->
+
+  <!-- Sección Pagados -->
+  <div class="pagados-section open" id="pagadosSection">
+    <div class="pagados-toggle" onclick="togglePagados()">
+      <span>Pagados</span>
+      <span class="count-badge" id="pagadosBadge">1 proveedor</span>
+      <span class="chev">▾</span>
+    </div>
+    <div class="pagados-list" id="pagadosList">
+
+      <!-- Uber (ya pagado desde el inicio) -->
+      <div class="prov-card is-paid open" data-prov="Uber" data-total="237000">
+        <div class="prov-card-head" onclick="toggleCard(this)">
+          <div>
+            <div class="prov-name">Uber</div>
+            <div class="prov-meta">6 proyectos · todo pagado</div>
+          </div>
+          <div class="prov-pill-wrap">
+            <div class="prov-total-pill all-paid">✓ $ 237.000</div>
+            <div class="chevron">▾</div>
+          </div>
+        </div>
+        <div class="prov-card-body">
+          <div class="proj-row" data-proj="Empresa Rápida S.A.">
+            <div><div class="proj-name">Empresa Rápida S.A.</div><div class="proj-num">Cot-048</div></div>
+            <button class="cell-btn paid" onclick="toggleCell(this)">✓ $ 12.000</button>
+            <button class="edit-prov-btn" onclick="openEditProv(this)" title="Cambiar proveedor">✎</button>
+          </div>
+          <div class="inline-edit-wrap">
+            <span class="inline-edit-label">Mover a:</span>
+            <input class="inline-edit-input" type="text" list="prov-datalist" placeholder="Nombre del proveedor — Enter para confirmar">
+            <button class="inline-edit-cancel" onclick="cancelEditProv(this)">✕</button>
+          </div>
+          <div class="proj-row" data-proj="Pinkerton Co.">
+            <div><div class="proj-name">Pinkerton Co.</div><div class="proj-num">Cot-045</div></div>
+            <button class="cell-btn paid" onclick="toggleCell(this)">✓ $ 20.000</button>
+            <button class="edit-prov-btn" onclick="openEditProv(this)" title="Cambiar proveedor">✎</button>
+          </div>
+          <div class="inline-edit-wrap">
+            <span class="inline-edit-label">Mover a:</span>
+            <input class="inline-edit-input" type="text" list="prov-datalist" placeholder="Nombre del proveedor — Enter para confirmar">
+            <button class="inline-edit-cancel" onclick="cancelEditProv(this)">✕</button>
+          </div>
+          <div class="proj-row" data-proj="Max58">
+            <div><div class="proj-name">Max58</div><div class="proj-num">Cot-044</div></div>
+            <button class="cell-btn paid" onclick="toggleCell(this)">✓ $ 10.000</button>
+            <button class="edit-prov-btn" onclick="openEditProv(this)" title="Cambiar proveedor">✎</button>
+          </div>
+          <div class="inline-edit-wrap">
+            <span class="inline-edit-label">Mover a:</span>
+            <input class="inline-edit-input" type="text" list="prov-datalist" placeholder="Nombre del proveedor — Enter para confirmar">
+            <button class="inline-edit-cancel" onclick="cancelEditProv(this)">✕</button>
+          </div>
+          <div class="proj-row" data-proj="Strick Ltd.">
+            <div><div class="proj-name">Strick Ltd.</div><div class="proj-num">Cot-041</div></div>
+            <button class="cell-btn paid" onclick="toggleCell(this)">✓ $ 5.000</button>
+            <button class="edit-prov-btn" onclick="openEditProv(this)" title="Cambiar proveedor">✎</button>
+          </div>
+          <div class="inline-edit-wrap">
+            <span class="inline-edit-label">Mover a:</span>
+            <input class="inline-edit-input" type="text" list="prov-datalist" placeholder="Nombre del proveedor — Enter para confirmar">
+            <button class="inline-edit-cancel" onclick="cancelEditProv(this)">✕</button>
+          </div>
+          <div class="proj-row" data-proj="Casa victor">
+            <div><div class="proj-name">Casa victor</div><div class="proj-num">Cot-039</div></div>
+            <button class="cell-btn paid" onclick="toggleCell(this)">✓ $ 10.000</button>
+            <button class="edit-prov-btn" onclick="openEditProv(this)" title="Cambiar proveedor">✎</button>
+          </div>
+          <div class="inline-edit-wrap">
+            <span class="inline-edit-label">Mover a:</span>
+            <input class="inline-edit-input" type="text" list="prov-datalist" placeholder="Nombre del proveedor — Enter para confirmar">
+            <button class="inline-edit-cancel" onclick="cancelEditProv(this)">✕</button>
+          </div>
+          <div class="proj-row" data-proj="Almacén de armado">
+            <div><div class="proj-name">Almacén de armado</div><div class="proj-num">Cot-037</div></div>
+            <button class="cell-btn paid" onclick="toggleCell(this)">✓ $ 10.000</button>
+            <button class="edit-prov-btn" onclick="openEditProv(this)" title="Cambiar proveedor">✎</button>
+          </div>
+          <div class="inline-edit-wrap">
+            <span class="inline-edit-label">Mover a:</span>
+            <input class="inline-edit-input" type="text" list="prov-datalist" placeholder="Nombre del proveedor — Enter para confirmar">
+            <button class="inline-edit-cancel" onclick="cancelEditProv(this)">✕</button>
+          </div>
+        </div>
+        <div class="prov-card-footer">
+          <button class="mark-all-btn" disabled>✓ Todo pagado</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- /page -->
+<datalist id="prov-datalist">
+  <option value="Maca">
+  <option value="Casa Victor">
+  <option value="LHS Cromado">
+  <option value="Uber">
+  <option value="Joni">
+  <option value="Pedro">
+</datalist>
+
+
+<script>
+// ── Error display for debugging ──────────────────────
+window.onerror = function(msg, src, line, col, err) {
+  var d = document.getElementById('err-banner');
+  if (!d) { d = document.createElement('div'); d.id = 'err-banner';
+    d.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#C0392B;color:white;padding:10px 16px;font-size:12px;z-index:9999;font-family:monospace;';
+    document.body.prepend(d); }
+  d.textContent = 'JS ERROR: ' + msg + ' (line ' + line + ')';
+  return false;
+};
+
+// ── helpers ────────────────────────────────────────────
+function parseAmount(btn) {
+  return parseInt(btn.textContent.replace(/[^0-9]/g, ''), 10) || 0;
+}
+function fmtNum(n) {
+  return new Intl.NumberFormat('es-AR').format(n);
+}
+function getAllProvNames() {
+  return [...new Set([...document.querySelectorAll('.prov-name')].map(el => el.textContent.trim()))];
+}
+function syncDatalist() {
+  var dl = document.getElementById('prov-datalist');
+  if (!dl) return;
+  var names = getAllProvNames();
+  dl.innerHTML = names.map(function(n){ return '<option value="' + n + '">'; }).join('');
+}
+
+// ── toggle card expand ─────────────────────────────────
+function toggleCard(head) {
+  head.closest('.prov-card').classList.toggle('open');
+}
+function togglePagados() {
+  document.getElementById('pagadosSection').classList.toggle('open');
+}
+
+// ── toggle paid/unpaid ─────────────────────────────────
+function toggleCell(btn) {
+  var isPaid = btn.classList.contains('paid');
+  var card = btn.closest('.prov-card');
+  if (isPaid) {
+    btn.classList.replace('paid','pend');
+    btn.textContent = btn.textContent.replace('✓ ','');
+    if (card.classList.contains('is-paid')) moveToPending(card);
+  } else {
+    btn.classList.replace('pend','paid');
+    btn.textContent = '✓ ' + btn.textContent;
+  }
+  updateCard(card);
+}
+
+function markAll(btn) {
+  var card = btn.closest('.prov-card');
+  card.querySelectorAll('.cell-btn.pend').forEach(function(b) {
+    b.classList.replace('pend','paid');
+    if (!b.textContent.startsWith('✓')) b.textContent = '✓ ' + b.textContent;
+  });
+  updateCard(card);
+}
+
+// ── update card header ─────────────────────────────────
+function updateCard(card) {
+  if (!card) return;
+  var allBtns = card.querySelectorAll('.cell-btn');
+  var paidBtns = card.querySelectorAll('.cell-btn.paid');
+  if (!allBtns.length) return;
+  var allPaid = allBtns.length === paidBtns.length;
+
+  var total = 0, pendiente = 0;
+  allBtns.forEach(function(b) {
+    var a = parseAmount(b);
+    total += a;
+    if (b.classList.contains('pend')) pendiente += a;
+  });
+
+  var meta = card.querySelector('.prov-meta');
+  if (meta) {
+    var rows = card.querySelectorAll('.proj-row');
+    var projSet = new Set([...rows].map(function(r){ return r.querySelector('.proj-name') ? r.querySelector('.proj-name').textContent : ''; }).filter(Boolean));
+    var nProj = projSet.size, nItems = allBtns.length;
+    meta.textContent = allPaid
+      ? nProj + ' proyecto' + (nProj!==1?'s':'') + ' · todo pagado'
+      : nProj + ' proyecto' + (nProj!==1?'s':'') + ' · ' + nItems + ' ítem' + (nItems!==1?'s':'');
+  }
+
+  var pill = card.querySelector('.prov-total-pill');
+  var markBtn = card.querySelector('.mark-all-btn');
+  var pendLabel = card.querySelector('.prov-pend-label');
+
+  if (pendLabel) pendLabel.textContent = '$ ' + fmtNum(pendiente) + ' pend.';
+
+  if (allPaid) {
+    if (pill) { pill.classList.replace('has-pend','all-paid'); pill.textContent = '✓ $ ' + fmtNum(total); }
+    if (pendLabel) pendLabel.style.display = 'none';
+    if (markBtn) { markBtn.textContent = '✓ Todo pagado'; markBtn.disabled = true; }
+    if (!card.classList.contains('is-paid')) setTimeout(function(){ moveToPaid(card); }, 500);
+  } else {
+    if (pill) { pill.classList.replace('all-paid','has-pend'); pill.textContent = '$ ' + fmtNum(total); }
+    if (pendLabel) pendLabel.style.display = '';
+    if (markBtn) { markBtn.textContent = 'Marcar todo pagado'; markBtn.disabled = false; }
+  }
+  updateSummaryTable();
+  updateStatsStrip();
+}
+
+// ── update summary table ───────────────────────────────
+function updateSummaryTable() {
+  document.querySelectorAll('tr[data-summary-proj]').forEach(function(row) {
+    var proj = row.dataset.summaryProj;
+    var total = 0, pagado = 0;
+    document.querySelectorAll('.proj-row[data-proj="' + proj + '"] .cell-btn').forEach(function(b) {
+      var a = parseAmount(b); total += a;
+      if (b.classList.contains('paid')) pagado += a;
+    });
+    if (total === 0) return;
+    var pct = Math.round(pagado / total * 100);
+    var pendiente = total - pagado;
+    row.style.display = pct === 100 ? 'none' : '';
+    if (pct === 100) return;
+    var bar = row.querySelector('.proj-bar-fill');
+    var pctSpan = row.querySelector('.proj-bar-wrap span');
+    var pendCell = row.querySelector('.proj-pend-cell');
+    if (bar) { bar.style.width = pct + '%'; bar.classList.toggle('done', pct===100); }
+    if (pctSpan) { pctSpan.textContent = pct + '%'; pctSpan.style.color = pct===100?'var(--good)':'var(--ink-soft)'; }
+    if (pendCell) { pendCell.textContent = pendiente>0 ? '$ '+fmtNum(pendiente) : '—'; pendCell.style.color = pendiente>0?'var(--bad)':'var(--good)'; }
+  });
+}
+
+// ── update stats ───────────────────────────────────────
+function updateStatsStrip() {
+  var totalPend=0, totalItems=0, totalPagado=0;
+  var provSet = new Set();
+  document.querySelectorAll('.prov-card .cell-btn').forEach(function(b) {
+    var a = parseAmount(b);
+    var provName = b.closest('.prov-card') ? b.closest('.prov-card').querySelector('.prov-name') : null;
+    if (b.classList.contains('pend')) {
+      totalPend += a; totalItems++;
+      if (provName) provSet.add(provName.textContent);
+    } else {
+      totalPagado += a;
+    }
+  });
+  var e;
+  e = document.getElementById('statPend');   if(e) e.textContent = '$ '+fmtNum(totalPend);
+  e = document.getElementById('statItems');  if(e) e.textContent = totalItems;
+  e = document.getElementById('statPagado'); if(e) e.textContent = '$ '+fmtNum(totalPagado);
+  e = document.getElementById('statProvCount'); if(e) e.textContent = provSet.size;
+}
+
+// ── move card to pagados ───────────────────────────────
+function moveToPaid(card) {
+  card.classList.add('leaving');
+  card.addEventListener('animationend', function() {
+    card.classList.remove('leaving','open');
+    card.classList.add('is-paid');
+    document.getElementById('pagadosList').appendChild(card);
+    var badge = document.getElementById('pagadosBadge');
+    if (badge) {
+      var n = document.querySelectorAll('#pagadosList .prov-card').length;
+      badge.textContent = n + ' proveedor' + (n!==1?'es':'');
+    }
+    updateStatsStrip();
+  }, { once:true });
+}
+function moveToPending(card) {
+  card.classList.remove('is-paid');
+  document.getElementById('pendCards').appendChild(card);
+  updateCard(card);
+}
+
+// ── PICKER: cambiar proveedor por ítem ─────────────────
+var _editRow = null;
+
+function openEditProv(btn) {
+  _editRow = btn.closest('.proj-row');
+  // close any open pickers
+  document.querySelectorAll('.inline-edit-wrap.active').forEach(function(w){ w.classList.remove('active'); });
+
+  var wrap = _editRow.nextElementSibling;
+  if (!wrap || !wrap.classList.contains('inline-edit-wrap')) return;
+  wrap.classList.add('active');
+
+  var names = getAllProvNames();
+  var chips = names.map(function(n) {
+    var safe = n.replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+    return '<button class="picker-chip" data-pname="'+safe+'" onclick="pickProv(this.dataset.pname)">'+safe+'</button>';
+  }).join('');
+
+  wrap.innerHTML =
+    '<span class="picker-label">Mover a:</span>' +
+    '<div class="picker-chips">' + chips +
+      '<button class="picker-chip picker-nuevo" onclick="showNuevo()">+ Nuevo proveedor</button>' +
+      '<button class="picker-chip picker-cancel-btn" onclick="closePicker()">✕ Cancelar</button>' +
+    '</div>' +
+    '<div class="picker-nuevo-row" id="pickerNuevoRow">' +
+      '<input type="text" id="pickerInput" class="picker-input" placeholder="Nombre del nuevo proveedor">' +
+      '<button class="picker-btn-mover" onclick="confirmNuevo()">Mover</button>' +
+    '</div>';
+}
+
+function pickProv(name) {
+  if (!_editRow || !name) return;
+  var row = _editRow;
+  _editRow = null;
+  document.querySelectorAll('.inline-edit-wrap.active').forEach(function(w){ w.classList.remove('active'); });
+  doMove(row, name);
+}
+
+function showNuevo() {
+  var r = document.getElementById('pickerNuevoRow');
+  if (!r) return;
+  r.style.display = 'flex';
+  var inp = document.getElementById('pickerInput');
+  if (inp) {
+    inp.focus();
+    inp.onkeyup = function(e) { if (e.key === 'Enter') confirmNuevo(); };
+  }
+}
+
+function confirmNuevo() {
+  var inp = document.getElementById('pickerInput');
+  if (!inp) return;
+  var name = inp.value.trim();
+  if (!name) { inp.focus(); return; }
+  if (!_editRow) return;
+  var row = _editRow;
+  _editRow = null;
+  document.querySelectorAll('.inline-edit-wrap.active').forEach(function(w){ w.classList.remove('active'); });
+  doMove(row, name);
+}
+
+function closePicker() {
+  _editRow = null;
+  document.querySelectorAll('.inline-edit-wrap.active').forEach(function(w){ w.classList.remove('active'); });
+}
+
+// ── move item to different proveedor ──────────────────
+function doMove(row, newProv) {
+  newProv = newProv.trim();
+  if (!newProv || !row) return;
+
+  var oldCard = row.closest('.prov-card');
+  var cellBtn = row.querySelector('.cell-btn');
+  if (!cellBtn || !oldCard) return;
+
+  var amount = cellBtn.textContent.trim();
+  var isPaid = cellBtn.classList.contains('paid');
+  var projNameEl = row.querySelector('.proj-name');
+  var projNumEl  = row.querySelector('.proj-num');
+  var projName   = projNameEl ? projNameEl.textContent : '';
+  var projNum    = projNumEl  ? projNumEl.textContent  : '';
+  var dataProjVal = row.dataset.proj || '';
+
+  // Find or create target card
+  var targetCard = null;
+  document.querySelectorAll('.prov-card').forEach(function(c) {
+    var pn = c.querySelector('.prov-name');
+    if (pn && pn.textContent.trim().toLowerCase() === newProv.toLowerCase()) targetCard = c;
+  });
+
+  if (!targetCard) {
+    targetCard = document.createElement('div');
+    targetCard.className = 'prov-card open';
+    var cleanAmt = amount.replace('✓ ','').trim();
+    targetCard.innerHTML =
+      '<div class="prov-card-head" onclick="toggleCard(this)">' +
+        '<div><div class="prov-name">'+newProv+'</div><div class="prov-meta">1 ítem</div></div>' +
+        '<div class="prov-pill-wrap"><div>' +
+          '<div class="prov-total-pill '+(isPaid?'all-paid':'has-pend')+'">'+(isPaid?'✓ ':'')+cleanAmt+'</div>' +
+          (isPaid?'':'<div class="prov-pend-label">'+cleanAmt+' pend.</div>') +
+        '</div><div class="chevron">▾</div></div>' +
+      '</div>' +
+      '<div class="prov-card-body"></div>' +
+      '<div class="prov-card-footer"><button class="mark-all-btn" onclick="markAll(this)">'+(isPaid?'✓ Todo pagado':'Marcar todo pagado')+'</button></div>';
+    if (isPaid) targetCard.querySelector('.mark-all-btn').disabled = true;
+    document.getElementById('pendCards').appendChild(targetCard);
+  }
+
+  // Build new row + empty wrap
+  var newRow = document.createElement('div');
+  newRow.className = 'proj-row';
+  if (dataProjVal) newRow.dataset.proj = dataProjVal;
+  newRow.innerHTML =
+    '<div><div class="proj-name">'+projName+'</div><div class="proj-num">'+projNum+'</div></div>' +
+    '<button class="cell-btn '+(isPaid?'paid':'pend')+'" onclick="toggleCell(this)">'+amount+'</button>' +
+    '<button class="edit-prov-btn" onclick="openEditProv(this)" title="Cambiar proveedor">✎</button>';
+
+  var newWrap = document.createElement('div');
+  newWrap.className = 'inline-edit-wrap';
+
+  var targetBody = targetCard.querySelector('.prov-card-body');
+  targetBody.appendChild(newRow);
+  targetBody.appendChild(newWrap);
+
+  // Remove from old card
+  var oldWrap = row.nextElementSibling;
+  row.remove();
+  if (oldWrap && oldWrap.classList.contains('inline-edit-wrap')) oldWrap.remove();
+
+  updateCard(oldCard);
+  updateCard(targetCard);
+
+  if (oldCard.querySelectorAll('.cell-btn').length === 0) oldCard.remove();
+  syncDatalist();
+}
+
+// ── init ───────────────────────────────────────────────
+updateSummaryTable();
+updateStatsStrip();
+</script>
+
+</body>
+</html>
