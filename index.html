@@ -962,9 +962,15 @@
   <div class="page">
     <div class="page-head">
       <div><h2>Calendario</h2><div class="sub">Entregas y pagos de proyectos aprobados.</div></div>
-      <button class="mini-btn" id="gcalSyncAllBtn" type="button" title="Sincronizar todos los proyectos con Google Calendar" style="display:none;">🔄 Sincronizar todo</button>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button class="mini-btn" id="gcalSyncAllBtn" type="button" title="Sincronizar todos los proyectos con Google Calendar" style="display:none;">🔄 Sincronizar todo</button>
+        <div id="calViewToggle" style="display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;">
+          <button id="calViewCalBtn" onclick="setCalView('calendar')" style="padding:5px 14px;font-size:12px;font-weight:600;border:none;cursor:pointer;font-family:inherit;background:var(--cyan);color:#fff;transition:.15s;">Calendario</button>
+          <button id="calViewListBtn" onclick="setCalView('list')" style="padding:5px 14px;font-size:12px;font-weight:600;border:none;cursor:pointer;font-family:inherit;background:var(--paper);color:var(--ink-soft);transition:.15s;">Lista</button>
+        </div>
+      </div>
     </div>
-    <div class="cal-layout">
+    <div class="cal-layout" id="calLayoutWrap">
       <div class="cal-main">
         <div class="cal-nav">
           <button class="cal-nav-btn" id="calPrev">&#8592;</button>
@@ -2934,6 +2940,23 @@
   // CALENDARIO
   // ======================================================
   const calState = { year: new Date().getFullYear(), month: new Date().getMonth(), selectedDay: null };
+  var calViewMode = 'calendar';
+
+  function setCalView(mode) {
+    calViewMode = mode;
+    var layout = $('calLayoutWrap');
+    var projects = $('calProjects');
+    var calBtn = $('calViewCalBtn');
+    var listBtn = $('calViewListBtn');
+    if(layout) layout.style.display = mode === 'calendar' ? '' : 'none';
+    if(projects) {
+      projects.style.display = mode === 'list' ? '' : 'none';
+      if(mode === 'list') renderCalProjects();
+    }
+    if(calBtn) { calBtn.style.background = mode==='calendar' ? 'var(--cyan)' : 'var(--paper)'; calBtn.style.color = mode==='calendar' ? '#fff' : 'var(--ink-soft)'; }
+    if(listBtn) { listBtn.style.background = mode==='list' ? 'var(--cyan)' : 'var(--paper)'; listBtn.style.color = mode==='list' ? '#fff' : 'var(--ink-soft)'; }
+  }
+  window.setCalView = setCalView;
   const MONTH_NAMES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
   function getCalEvents(){
@@ -3120,9 +3143,12 @@
   }
 
   function renderCalendario(){
-    renderCalGrid();
-    renderCalDetail();
-    renderCalProjects();
+    setCalView(calViewMode); // apply show/hide
+    if(calViewMode === 'calendar'){
+      renderCalGrid();
+      renderCalDetail();
+    }
+    renderCalProjects(); // always keep data fresh; visibility set by setCalView
   }
 
   // Set up static calendar controls (once)
