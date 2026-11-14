@@ -598,22 +598,19 @@
   .btn-pagado{border:1px solid #C4B5FD;background:#EDE9FE;border-radius:5px;padding:3px 9px;font-size:10.5px;font-weight:600;color:#5B21B6;cursor:pointer;text-transform:uppercase;letter-spacing:.03em;white-space:nowrap;}
   [data-theme="dark"] .btn-pagado{background:#3B2A6E;color:#C4B5FD;border-color:#6D4FCC;}
   /* Proveedores — card layout */
-  .prov-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;}
-  .prov-card{background:var(--paper);border:1px solid var(--line);border-radius:14px;transition:opacity .3s,transform .3s;display:flex;flex-direction:column;}
-  .prov-card-top{padding:16px 16px 12px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
-  .prov-card-info{flex:1;min-width:0;}
-  .prov-name{font-size:14px;font-weight:700;}
-  .prov-meta{font-size:11px;color:var(--ink-soft);margin-top:2px;}
-  .prov-card-amounts{text-align:right;flex-shrink:0;}
-  .prov-card-total{font-size:15px;font-weight:800;letter-spacing:-.02em;white-space:nowrap;}
+  .prov-cards{display:flex;flex-direction:column;gap:6px;}
+  .prov-card{background:var(--paper);border:1px solid var(--line);border-radius:10px;transition:opacity .3s,transform .3s;}
+  .prov-card-top{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;user-select:none;border-radius:10px 10px 0 0;}
+  .prov-card-top:hover{background:var(--card-hover,#F1F1F1);}
+  .prov-name{font-size:13px;font-weight:700;}
+  .prov-meta{font-size:11px;color:var(--ink-soft);flex:1;}
+  .prov-card-amounts{display:flex;align-items:center;gap:10px;flex-shrink:0;}
+  .prov-card-total{font-size:12.5px;font-weight:700;white-space:nowrap;}
   .prov-card-total.has-pend{color:var(--bad,#C0392B);}
   .prov-card-total.all-paid{color:var(--cyan-dark,#0A6B57);}
-  .prov-card-pend{font-size:10px;color:var(--bad,#C0392B);font-weight:600;margin-top:2px;white-space:nowrap;}
-  .prov-card-bar{height:3px;background:var(--line);}
-  .prov-card-bar-fill{height:100%;background:var(--cyan,#0E8F74);transition:.3s;}
-  .expand-prov-btn{font-size:11px;color:var(--ink-soft);background:none;border:none;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:4px;}
-  .expand-prov-btn .expand-chev{transition:.2s;display:inline-block;}
-  .prov-card.open .expand-prov-btn .expand-chev{transform:rotate(180deg);}
+  .prov-card-pend{font-size:11px;color:var(--bad,#C0392B);font-weight:600;white-space:nowrap;}
+  .prov-chevron{font-size:12px;color:var(--ink-soft);transition:.2s;flex-shrink:0;}
+  .prov-card.open .prov-chevron{transform:rotate(180deg);}
   .prov-card-body{display:none;border-top:1px solid var(--line);}
   .prov-card.open .prov-card-body{display:block;}
   .proj-row{display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:8px;padding:10px 18px;border-bottom:1px solid var(--line);position:relative;}
@@ -652,8 +649,8 @@
   .pagados-count-badge{background:var(--good-bg,#E6F7F2);color:var(--cyan-dark,#0A6B57);font-size:11px;font-weight:700;border-radius:6px;padding:2px 8px;}
   .pagados-chev{margin-left:auto;font-size:11px;transition:.2s;}
   .pagados-section.open .pagados-chev{transform:rotate(180deg);}
-  .pagados-list{display:none;margin-top:10px;}
-  .pagados-section.open .pagados-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;}
+  .pagados-list{display:none;flex-direction:column;gap:6px;margin-top:10px;}
+  .pagados-section.open .pagados-list{display:flex;}
   .prov-card.is-paid{border-color:var(--line);opacity:.75;}
   .prov-card.is-paid .prov-name{color:var(--ink-soft);}
   .prov-summary-section{margin-bottom:20px;}
@@ -3726,26 +3723,21 @@
         <div class="inline-edit-wrap"></div>`;
       }).join('');
 
-      const paidAmount = groups.reduce((s,g) => s+g.items.filter(c=>c.pagado).reduce((ss,c)=>ss+(c.total||0),0), 0);
-      const pct = total > 0 ? Math.round(paidAmount / total * 100) : 0;
       return `<div class="prov-card${isPaidCard?' is-paid':''} open" data-prov-name="${escHtml(provName)}">
-        <div class="prov-card-top">
-          <div class="prov-card-info">
-            <div class="prov-name">${escHtml(provName)}</div>
-            <div class="prov-meta">${escHtml(metaText)}</div>
-          </div>
+        <div class="prov-card-top" onclick="toggleProvCard(this)">
+          <div class="prov-name">${escHtml(provName)}</div>
+          <div class="prov-meta">${escHtml(metaText)}</div>
           <div class="prov-card-amounts">
-            <div class="prov-card-total ${allPaid?'all-paid':'has-pend'}">${allPaid?'✓ ':''}$ ${fmt.format(Math.round(total))}</div>
             ${!allPaid?`<div class="prov-card-pend">$ ${fmt.format(Math.round(pendiente))} pend.</div>`:''}
+            <div class="prov-card-total ${allPaid?'all-paid':'has-pend'}">${allPaid?'✓ ':''}$ ${fmt.format(Math.round(total))}</div>
           </div>
+          <div class="prov-chevron">▾</div>
         </div>
-        <div class="prov-card-bar"><div class="prov-card-bar-fill" style="width:${pct}%"></div></div>
         <div class="prov-card-body">${rows}</div>
         <div class="prov-card-footer">
           <button class="mark-all-btn" onclick="markAllProv(this)"${allPaid?' disabled':''}>
             ${allPaid?'✓ Todo pagado':'Marcar todo pagado'}
           </button>
-          <button class="expand-prov-btn" onclick="toggleProvCard(this)">Ver proyectos <span class="expand-chev">▾</span></button>
         </div>
       </div>`;
     }
@@ -3986,17 +3978,6 @@
     var pill = card.querySelector('.prov-card-total');
     var markBtn = card.querySelector('.mark-all-btn');
     var pendLabel = card.querySelector('.prov-card-pend');
-    var barFill = card.querySelector('.prov-card-bar-fill');
-    var paidAmt = 0;
-    allBtns.forEach(function(b) {
-      var ids2 = (b.dataset.compraIds||'').split(',').filter(Boolean);
-      ids2.forEach(function(id) {
-        var c = compras.find(function(x){ return x.id === id; });
-        if(c && c.pagado) paidAmt += c.total||0;
-      });
-    });
-    var pct2 = total > 0 ? Math.round(paidAmt / total * 100) : 0;
-    if(barFill) barFill.style.width = pct2 + '%';
 
     if(allPaid) {
       if(pill) { pill.classList.replace('has-pend','all-paid'); pill.textContent = '✓ $ ' + fmt.format(Math.round(total)); }
@@ -4196,18 +4177,18 @@
       var cleanAmt = amount.replace('✓ ','').trim();
       var safeNewProv = newProv.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
       targetCard.innerHTML =
-        '<div class="prov-card-top">' +
-          '<div class="prov-card-info"><div class="prov-name">'+safeNewProv+'</div><div class="prov-meta">1 ítem</div></div>' +
+        '<div class="prov-card-top" onclick="toggleProvCard(this)">' +
+          '<div class="prov-name">'+safeNewProv+'</div>' +
+          '<div class="prov-meta">1 ítem</div>' +
           '<div class="prov-card-amounts">' +
-            '<div class="prov-card-total '+(isPaid?'all-paid':'has-pend')+'">'+(isPaid?'✓ ':'')+cleanAmt+'</div>' +
             (isPaid?'':'<div class="prov-card-pend">'+cleanAmt+' pend.</div>') +
+            '<div class="prov-card-total '+(isPaid?'all-paid':'has-pend')+'">'+(isPaid?'✓ ':'')+cleanAmt+'</div>' +
           '</div>' +
+          '<div class="prov-chevron">▾</div>' +
         '</div>' +
-        '<div class="prov-card-bar"><div class="prov-card-bar-fill" style="width:'+(isPaid?'100':'0')+'%"></div></div>' +
         '<div class="prov-card-body"></div>' +
         '<div class="prov-card-footer">' +
           '<button class="mark-all-btn" onclick="markAllProv(this)">'+(isPaid?'✓ Todo pagado':'Marcar todo pagado')+'</button>' +
-          '<button class="expand-prov-btn" onclick="toggleProvCard(this)">Ver proyectos <span class="expand-chev">▾</span></button>' +
         '</div>';
       if(isPaid) targetCard.querySelector('.mark-all-btn').disabled = true;
       var pendCards = document.getElementById('provPendCards');
