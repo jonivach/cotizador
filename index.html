@@ -653,7 +653,8 @@
   .pagados-section.open .pagados-list{display:flex;}
   .prov-card.is-paid{border-color:var(--line);opacity:.75;}
   .prov-card.is-paid .prov-name{color:var(--ink-soft);}
-  .proj-summary-wrap{margin-bottom:20px;overflow-x:auto;}
+  .prov-summary-section{margin-bottom:20px;}
+  .proj-summary-wrap{overflow-x:auto;}
   .proj-summary-table{border-collapse:collapse;width:100%;font-size:12px;}
   .proj-summary-table th{padding:8px 14px;text-align:left;font-size:9px;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-soft);font-weight:700;border-bottom:2px solid var(--line);white-space:nowrap;}
   .proj-summary-table th:last-child,.proj-summary-table td:last-child{text-align:right;}
@@ -3792,13 +3793,20 @@
 
     wrap.innerHTML = `
       ${cotSummaries.some(cs=>cs.pct<100) ? `
-      <div class="proj-summary-wrap">
-        <table class="proj-summary-table">
-          <thead><tr>
-            <th>Proyecto</th><th>Cot.</th><th>Pagado</th><th>Pendiente</th><th>Total</th>
-          </tr></thead>
-          <tbody>${summaryRows}</tbody>
-        </table>
+      <div class="prov-summary-section" id="provSummarySection">
+        <div class="pagados-toggle" onclick="toggleProvSummary()" style="margin-bottom:0;">
+          <span>Proyectos pendientes</span>
+          <span class="pagados-count-badge">${cotSummaries.filter(cs=>cs.pct<100).length} proyecto${cotSummaries.filter(cs=>cs.pct<100).length!==1?'s':''}</span>
+          <span class="pagados-chev">▾</span>
+        </div>
+        <div class="proj-summary-wrap" id="provSummaryBody" style="display:none;margin-top:10px;">
+          <table class="proj-summary-table">
+            <thead><tr>
+              <th>Proyecto</th><th>Cot.</th><th>Pagado</th><th>Pendiente</th><th>Total</th>
+            </tr></thead>
+            <tbody>${summaryRows}</tbody>
+          </table>
+        </div>
       </div>` : ''}
       <div class="prov-cards" id="provPendCards">
         ${pendingProvs.map(p => renderProvCardHtml(p, false)).join('')}
@@ -3890,6 +3898,15 @@
   function toggleProvPagados() {
     var s = document.getElementById('provPagadosSection');
     if(s) s.classList.toggle('open');
+  }
+  function toggleProvSummary() {
+    var body = document.getElementById('provSummaryBody');
+    var section = document.getElementById('provSummarySection');
+    if(!body || !section) return;
+    var isOpen = body.style.display !== 'none';
+    body.style.display = isOpen ? 'none' : 'block';
+    var chev = section.querySelector('.pagados-chev');
+    if(chev) chev.style.transform = isOpen ? '' : 'rotate(180deg)';
   }
 
   function toggleProvCell(btn) {
@@ -4207,6 +4224,7 @@
   }
 
   // Expose prov functions to global scope (required for inline onclick handlers)
+  window.toggleProvSummary = toggleProvSummary;
   window.toggleProvCard    = toggleProvCard;
   window.toggleProvPagados = toggleProvPagados;
   window.toggleProvCell    = toggleProvCell;
