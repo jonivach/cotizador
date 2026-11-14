@@ -1605,6 +1605,7 @@
     if(comprasUnsubscribe) comprasUnsubscribe();
     comprasUnsubscribe = cloudDocRef(COMPRAS_KEY).onSnapshot(snap => {
       compras = (snap.exists && snap.data() && snap.data().items) ? snap.data().items : [];
+      deduplicarCompras(); // limpia duplicados silenciosamente (solo guarda si encontró algo)
       try{ renderProveedores(); }catch(e){}
       updateProveedoresList();
     }, e => { console.error('[Firestore] Error en compras snapshot:', e); });
@@ -1756,8 +1757,8 @@
     // Mantener compras pagadas existentes (no borrar pagos ya registrados)
     compras = compras.filter(x => x.pagado);
     aprobadas.forEach(c => {
-      // No duplicar si ya existen compras no pagadas para esta cotización
-      const yaExisten = compras.some(x => x.cotizacionId === c.id && !x.pagado);
+      // No duplicar si ya existen compras (pagas o no) para esta cotización
+      const yaExisten = compras.some(x => x.cotizacionId === c.id);
       if(yaExisten) return;
       const fechaAprob = c.fechaAprobacion || new Date().toISOString().slice(0,10);
       const clienteLabel = [c.agencia, c.empresa].filter(Boolean).join(' · ') || c.marca || '—';
@@ -1772,6 +1773,35 @@
     showToast(`✓ Compras regeneradas desde ${aprobadas.length} proyectos`);
   }
   window.regenerarCompras = regenerarCompras;
+
+  // Deduplicar compras: misma cot + producto + insumo + costoUnit + cantidad → conservar la mejor (pagada > no pagada)
+  function deduplicarCompras() {
+    const seen = {};
+    const keep = [];
+    compras.forEach(function(c) {
+      const key = [c.cotizacionId, c.productoNombre||'', c.insumoNombre||'', c.costoUnit||0, c.cantidad||1].join('||');
+      if(!seen[key]) {
+        seen[key] = c;
+        keep.push(c);
+      } else {
+        // si el nuevo es pagado y el guardado no, reemplazar
+        if(c.pagado && !seen[key].pagado) {
+          const idx = keep.indexOf(seen[key]);
+          keep[idx] = c;
+          seen[key] = c;
+        }
+        // si no, descartar el duplicado
+      }
+    });
+    const removed = compras.length - keep.length;
+    if(removed > 0) {
+      compras = keep;
+      saveCompras();
+      console.log('[dedup] Eliminadas ' + removed + ' compras duplicadas');
+    }
+    return removed;
+  }
+  window.deduplicarCompras = deduplicarCompras;
 
   function saveBiblioteca(){
     cloudDocRef(BIBL_KEY).set({ items: biblioteca }).catch(() => {});
@@ -2340,7 +2370,8 @@
         setPendingApproval(id, cotizaciones[idx]);
         saveCotizaciones(cotizaciones);
         // Generar compras desde insumos de productos aprobados
-        compras = compras.filter(x => x.cotizacionId !== id);
+        // Al re-aprobar: borrar solo las compras NO pagadas de esta cot, conservar las pagadas
+        compras = compras.filter(x => x.cotizacionId !== id || x.pagado);
         const fechaAprob = new Date().toISOString();
         const clienteLabel = [c.agencia, c.empresa].filter(Boolean).join(' · ') || c.marca || '—';
         productosAprobados.forEach(p => {
@@ -3671,6 +3702,55 @@
       wrap.innerHTML = `<div style="color:var(--ink-soft);font-size:13px;text-align:center;padding:40px 0;">Sin compras registradas.<br>Se generan automáticamente al aprobar proyectos.</div>`;
       return;
     }
+
+    // ── AUDITORÍA: cruzar compras vs cotizaciones ─────────────────
+    (function(){
+      const aprobadas = cotizaciones.filter(c => c.estado === 'aprobado' && (c.productosAprobados||[]).length);
+      const disc = [];
+      aprobadas.forEach(function(cot) {
+        // esperado por proveedor desde cotización
+        const esp = {};
+        (cot.productosAprobados||[]).forEach(function(p){
+          (p.insumos||[]).filter(function(i){ return (i.costoUnit||0)>0 && (i.nombre||'').trim(); }).forEach(function(ins){
+            const pv = ins.proveedor||ins.link||'—';
+            if(!pv||pv==='—') return;
+            esp[pv] = (esp[pv]||0) + (ins.costoUnit||0)*(ins.cantidad||1);
+          });
+        });
+        // real desde compras
+        const real = {};
+        compras.filter(function(x){ return x.cotizacionId===cot.id; }).forEach(function(c){
+          if(!c.proveedor||c.proveedor==='—') return;
+          real[c.proveedor] = (real[c.proveedor]||0) + (c.total||0);
+        });
+        // comparar
+        const provs = new Set([...Object.keys(esp),...Object.keys(real)]);
+        const clienteLabel = [cot.agencia,cot.empresa].filter(Boolean).join(' · ')||cot.marca||'—';
+        provs.forEach(function(pv){
+          const e = esp[pv]||0, r = real[pv]||0;
+          if(Math.abs(e-r) > 1) disc.push({ cotNum:cot.num, cliente:clienteLabel, proveedor:pv, esperado:e, real:r });
+        });
+      });
+      var old = document.getElementById('provAuditBanner');
+      if(old) old.remove();
+      if(!disc.length) return;
+      const banner = document.createElement('div');
+      banner.id = 'provAuditBanner';
+      banner.style.cssText = 'background:#FFF6D9;border:1px solid #F0C040;border-radius:10px;padding:12px 16px;margin-bottom:14px;font-size:12px;';
+      const rows = disc.map(function(d){
+        const diff = d.real - d.esperado;
+        const sign = diff > 0 ? '+' : '';
+        return '<div style="display:flex;gap:10px;align-items:baseline;padding:4px 0;border-bottom:1px solid #F0E090;">'
+          +'<span style="font-weight:700;min-width:70px;">'+escHtml(d.cotNum)+'</span>'
+          +'<span style="flex:1;color:#666;">'+escHtml(d.cliente)+' · '+escHtml(d.proveedor)+'</span>'
+          +'<span style="color:#B98E00;">esperado: $'+fmt.format(Math.round(d.esperado))+'</span>'
+          +'<span style="color:#C0392B;font-weight:700;">registrado: $'+fmt.format(Math.round(d.real))+'</span>'
+          +'<span style="color:'+(diff>0?'#C0392B':'#0A6B57')+';font-weight:700;">'+sign+fmt.format(Math.round(diff))+'</span>'
+          +'</div>';
+      }).join('');
+      banner.innerHTML = '<div style="font-weight:700;margin-bottom:8px;">⚠ '+disc.length+' discrepancia'+(disc.length!==1?'s':'')+' encontrada'+(disc.length!==1?'s':'')+' en compras</div>'+rows;
+      wrap.insertBefore(banner, wrap.firstChild);
+    })();
 
     // ── CARD LAYOUT ──────────────────────────────────────────────
     const comprasConProv = compras.filter(x => x.proveedor && x.proveedor !== '—');
