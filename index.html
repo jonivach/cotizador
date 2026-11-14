@@ -873,7 +873,6 @@
   <div class="page">
     <div class="page-head">
       <div><h2>Proveedores</h2><div class="sub">Compras generadas automáticamente al aprobar proyectos.</div></div>
-      <button onclick="regenerarCompras()" style="padding:5px 14px;background:var(--card);border:1px solid var(--line);border-radius:6px;font-family:inherit;font-size:11.5px;font-weight:600;color:var(--ink-soft);cursor:pointer;white-space:nowrap;" title="Regenera compras pendientes para todos los proyectos aprobados">↺ Regenerar</button>
     </div>
     <div id="provFaltantesWrap"></div>
     <div class="stat-strip">
@@ -3580,17 +3579,7 @@
       (c.productosAprobados||[]).some(p => (p.insumos||[]).some(i => (i.costoUnit||0) > 0 && (i.nombre||'').trim()))
     );
     const faltantesWrap = $('provFaltantesWrap');
-    if(faltantesWrap){
-      if(faltantes.length){
-        faltantesWrap.innerHTML = `<div style="background:#FFF6D9;border:1px solid #E8C94A;border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:12.5px;">
-          <strong style="color:#7A5C00;">⚠ ${faltantes.length} proyecto${faltantes.length>1?'s':''} aprobado${faltantes.length>1?'s':''} sin compras registradas:</strong>
-          <span style="color:#7A5C00;margin-left:6px;">${faltantes.map(c=>`${c.num||'—'} · ${[c.agencia,c.empresa].filter(Boolean).join(' / ')||c.marca||'—'}`).join(' &nbsp;|&nbsp; ')}</span>
-          <button onclick="regenerarCompras()" style="margin-left:12px;padding:3px 10px;background:#7A5C00;color:#fff;border:none;border-radius:5px;font-family:inherit;font-size:11.5px;font-weight:600;cursor:pointer;">↺ Regenerar</button>
-        </div>`;
-      } else {
-        faltantesWrap.innerHTML = '';
-      }
-    }
+    if(faltantesWrap) faltantesWrap.innerHTML = '';
 
     if(!compras.length){
       wrap.innerHTML = `<div style="color:var(--ink-soft);font-size:13px;text-align:center;padding:40px 0;">Sin compras registradas.<br>Se generan automáticamente al aprobar proyectos.</div>`;
