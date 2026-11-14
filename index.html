@@ -2658,7 +2658,7 @@
   }
 
   function renderContable(){
-    const aprobados = filtrarPorMes(cotizaciones.filter(c => c.estado === 'aprobada').slice().reverse());
+    const aprobados = filtrarPorMes(cotizaciones.filter(c => c.estado === 'aprobada').slice().sort((a,b) => (b.fechaAprobacion||'').localeCompare(a.fechaAprobacion||'')));
     const wrap = $('contableWrap');
     if(!wrap) return;
 
@@ -2951,11 +2951,7 @@
     const wrap = $('calProjects');
     if(!wrap) return;
 
-    const todas = cotizaciones.filter(c=>c.estado==='aprobada').sort((a,b)=>{
-      const na = parseInt((a.num||'').replace(/\D/g,''))||0;
-      const nb = parseInt((b.num||'').replace(/\D/g,''))||0;
-      return nb - na;
-    });
+    const todas = cotizaciones.filter(c=>c.estado==='aprobada').slice().sort((a,b) => (b.fechaAprobacion||'').localeCompare(a.fechaAprobacion||''));
     if(!todas.length){ wrap.innerHTML=''; return; }
 
     function estadoVisual(c){
@@ -3616,7 +3612,11 @@
       const items = compras.filter(x => x.cotizacionId === id);
       const first = items[0];
       return { id, num: first.cotizacionNum||'—', cliente: first.cotizacionCliente||'—', items };
-    }).sort((a,b) => b.num.localeCompare(a.num));
+    }).sort((a,b) => {
+      const fa = compras.find(x=>x.cotizacionId===a.id)?.fechaAprobacion||'';
+      const fb = compras.find(x=>x.cotizacionId===b.id)?.fechaAprobacion||'';
+      return fb.localeCompare(fa) || b.num.localeCompare(a.num);
+    });
 
     // Celdas: matrix[cotId][prov] = { total, pendiente, pagado, allPaid, items }
     const matrix = {};
