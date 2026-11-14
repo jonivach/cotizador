@@ -3731,7 +3731,7 @@
 
     // ── AUDITORÍA: cruzar compras vs cotizaciones ─────────────────
     (function(){
-      const aprobadas = cotizaciones.filter(c => c.estado === 'aprobado' && (c.productosAprobados||[]).length);
+      const aprobadas = cotizaciones.filter(c => c.estado === 'aprobada' && (c.productosAprobados||[]).length);
       const disc = [];
       aprobadas.forEach(function(cot) {
         // esperado por proveedor desde cotización
