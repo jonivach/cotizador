@@ -3602,6 +3602,16 @@
   function renderProveedores(){
     const wrap = $('proveedoresWrap');
     if(!wrap) return;
+    // Guardar estado abierto/cerrado por nombre de proveedor
+    const _closedProvs = new Set();
+    wrap.querySelectorAll('.prov-card').forEach(function(c){
+      if(!c.classList.contains('open')){
+        var nm = c.querySelector('.prov-name');
+        if(nm) _closedProvs.add(nm.textContent.trim());
+      }
+    });
+    const _pagadosOpen = wrap.querySelector('#provPagadosSection.open') !== null;
+    const _summaryOpen = (function(){ var b=$('provSummaryBody'); return b && b.style.display!=='none'; })();
     // Limpiar compras huérfanas (cotizacionId ya no existe en cotizaciones)
     // SOLO si cotizaciones ya cargó (> 0), para no borrar datos válidos durante el inicio
     if(cotizaciones.length > 0){
@@ -3820,6 +3830,18 @@
       </div>` : ''}
       ${sinProvHtml}
     `;
+    // Restaurar estado abierto/cerrado
+    if(_closedProvs.size > 0){
+      wrap.querySelectorAll('.prov-card').forEach(function(c){
+        var nm = c.querySelector('.prov-name');
+        if(nm && _closedProvs.has(nm.textContent.trim())) c.classList.remove('open');
+      });
+    } else if(_closedProvs.size === 0 && wrap.querySelectorAll('.prov-card').length > 0 && !wrap._firstRender) {
+      // primera vez: dejar todo abierto (default)
+    }
+    wrap._firstRender = false;
+    if(_pagadosOpen){ var ps=$('provPagadosSection'); if(ps) ps.classList.add('open'); }
+    if(_summaryOpen){ var sb=$('provSummaryBody'); if(sb){ sb.style.display='block'; var sc=$('provSummarySection'); if(sc){ var ch=sc.querySelector('.pagados-chev'); if(ch) ch.style.transform='rotate(180deg)'; }}}
   }
 
   // Editar proveedor por ítem individual
