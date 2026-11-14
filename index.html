@@ -1700,6 +1700,7 @@
     renderProveedores();
     showToast(`✓ Compras regeneradas desde ${aprobadas.length} proyectos`);
   }
+  window.regenerarCompras = regenerarCompras;
 
   function saveBiblioteca(){
     cloudDocRef(BIBL_KEY).set({ items: biblioteca }).catch(() => {});
