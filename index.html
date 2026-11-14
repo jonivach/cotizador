@@ -1888,7 +1888,11 @@
   // ======================================================
   function renderAprobados(){
     const q = ($('searchAprobados') && $('searchAprobados').value || '').toLowerCase();
-    const aprobados = cotizaciones.filter(c => c.estado === 'aprobada').slice().sort((a,b) => (b.fechaAprobacion||'').localeCompare(a.fechaAprobacion||''));
+    const aprobados = cotizaciones.filter(c => c.estado === 'aprobada').slice().sort((a,b) => {
+      const d = (b.fechaAprobacion||'').localeCompare(a.fechaAprobacion||'');
+      if(d !== 0) return d;
+      return (b.num||'').localeCompare(a.num||'');
+    });
     const byEstado = aprobEstadoFilter === 'todos' ? aprobados : aprobados.filter(c => (c.estadoProyecto||'en-curso') === aprobEstadoFilter);
     const filtered = q ? byEstado.filter(c =>
       (c.num||'').toLowerCase().includes(q) ||
@@ -2260,12 +2264,12 @@
               }))
             }))
           : gastosExistentes;
-        cotizaciones[idx] = { ...cotizaciones[idx], estado: 'aprobada', estadoProyecto: 'en-curso', fechaAprobacion: new Date().toISOString().slice(0,10), productosAprobados, totalAprobado, gananciaAprobada, gastosReales: gastosAutoFill };
+        cotizaciones[idx] = { ...cotizaciones[idx], estado: 'aprobada', estadoProyecto: 'en-curso', fechaAprobacion: new Date().toISOString(), productosAprobados, totalAprobado, gananciaAprobada, gastosReales: gastosAutoFill };
         setPendingApproval(id, cotizaciones[idx]);
         saveCotizaciones(cotizaciones);
         // Generar compras desde insumos de productos aprobados
         compras = compras.filter(x => x.cotizacionId !== id);
-        const fechaAprob = new Date().toISOString().slice(0,10);
+        const fechaAprob = new Date().toISOString();
         const clienteLabel = [c.agencia, c.empresa].filter(Boolean).join(' · ') || c.marca || '—';
         productosAprobados.forEach(p => {
           (p.insumos||[]).filter(ins => (ins.costoUnit||0) > 0 && (ins.nombre||'').trim()).forEach(ins => {
@@ -2657,7 +2661,7 @@
   }
 
   function renderContable(){
-    const aprobados = filtrarPorMes(cotizaciones.filter(c => c.estado === 'aprobada').slice().sort((a,b) => (b.fechaAprobacion||'').localeCompare(a.fechaAprobacion||'')));
+    const aprobados = filtrarPorMes(cotizaciones.filter(c => c.estado === 'aprobada').slice().sort((a,b) => { const d=(b.fechaAprobacion||'').localeCompare(a.fechaAprobacion||''); return d!==0?d:(b.num||'').localeCompare(a.num||''); }));
     const wrap = $('contableWrap');
     if(!wrap) return;
 
@@ -2950,7 +2954,7 @@
     const wrap = $('calProjects');
     if(!wrap) return;
 
-    const todas = cotizaciones.filter(c=>c.estado==='aprobada').slice().sort((a,b) => (b.fechaAprobacion||'').localeCompare(a.fechaAprobacion||''));
+    const todas = cotizaciones.filter(c=>c.estado==='aprobada').slice().sort((a,b) => { const d=(b.fechaAprobacion||'').localeCompare(a.fechaAprobacion||''); return d!==0?d:(b.num||'').localeCompare(a.num||''); });
     if(!todas.length){ wrap.innerHTML=''; return; }
 
     function estadoVisual(c){
