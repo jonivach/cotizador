@@ -3089,11 +3089,12 @@
       if(c.estado !== 'aprobada')
         return { label:'En curso', bg:'#FEF3C7', color:'#92400E', dot:'#F59E0B' };
       const ent = (c.entregas||[]).filter(e=>e.fecha);
-      const pag = (c.pagos||[]).filter(p=>p.fecha);
-      const allEnt = ent.length>0 && ent.every(e=>e.entregado);
-      const allPag = pag.length>0 && pag.every(p=>p.cobrado);
-      if(allEnt && allPag) return { label:'Completado', bg:'#D1FAE5', color:'#065F46', dot:'#10B981' };
-      if(allEnt)           return { label:'Entregado',  bg:'#DBEAFE', color:'#1E40AF', dot:'#3B82F6' };
+      const pag = (c.pagos||[]).filter(p=>(p.porcentaje||0)>0||p.cobrado);
+      const entregado   = ent.some(e=>e.entregado);
+      const todoCobrado = pag.length>0 && pag.every(p=>p.cobrado);
+      if(entregado && todoCobrado) return { label:'Completado',       bg:'#D1FAE5', color:'#065F46', dot:'#10B981' };
+      if(entregado)                return { label:'Entregado / NC',   bg:'#FFEDD5', color:'#9A3412', dot:'#F97316' };
+      if(todoCobrado)              return { label:'No ent. cobrado',  bg:'#EDE9FE', color:'#5B21B6', dot:'#7C3AED' };
       return { label:'En curso', bg:'#FEF3C7', color:'#92400E', dot:'#F59E0B' };
     }
 
