@@ -3534,6 +3534,20 @@
     }catch(e){ return null; }
   }
 
+  // Busca en GCal si ya existe un evento con el mismo título en esa fecha (evita duplicados)
+  async function gcalFindExisting(title, dateStr){
+    if(!gcalToken) return null;
+    try{
+      const tMin = dateStr + 'T00:00:00Z';
+      const tMax = dateStr + 'T23:59:59Z';
+      const url = `/calendars/${GCAL_CAL_ID}/events?timeMin=${encodeURIComponent(tMin)}&timeMax=${encodeURIComponent(tMax)}&singleEvents=true&maxResults=50`;
+      const r = await gcalRequest('GET', url);
+      if(!r || !r.items) return null;
+      const match = r.items.find(ev => ev.summary === title);
+      return match ? match.id : null;
+    }catch(e){ return null; }
+  }
+
   function gcalEventBody(title, dateStr, description, colorId){
     return {
       summary: title,
@@ -3578,8 +3592,15 @@
       }
     }
     if(!evId || created){
-      const r = await gcalRequest('POST', `/calendars/${GCAL_CAL_ID}/events`, body);
-      if(r && r.id){ e.gcalEventId = r.id; gcalIdSet(c.id, 'e', eidx, r.id); saveCotizaciones(cotizaciones); }
+      // Antes de crear, buscar si ya existe un evento igual (evita duplicados)
+      const existingId = await gcalFindExisting(title, e.fecha);
+      if(existingId){
+        e.gcalEventId = existingId; gcalIdSet(c.id, 'e', eidx, existingId); saveCotizaciones(cotizaciones);
+        await gcalRequest('PATCH', `/calendars/${GCAL_CAL_ID}/events/${existingId}`, body);
+      } else {
+        const r = await gcalRequest('POST', `/calendars/${GCAL_CAL_ID}/events`, body);
+        if(r && r.id){ e.gcalEventId = r.id; gcalIdSet(c.id, 'e', eidx, r.id); saveCotizaciones(cotizaciones); }
+      }
     }
     if(!gcalToken) gcalEnqueue({ type:'upsert-entrega', cid:c.id, eidx });
   }
@@ -3615,8 +3636,15 @@
       }
     }
     if(!evId || created){
-      const r = await gcalRequest('POST', `/calendars/${GCAL_CAL_ID}/events`, body);
-      if(r && r.id){ p.gcalEventId = r.id; gcalIdSet(c.id, 'p', pidx, r.id); saveCotizaciones(cotizaciones); }
+      // Antes de crear, buscar si ya existe un evento igual (evita duplicados)
+      const existingId = await gcalFindExisting(title, p.fecha);
+      if(existingId){
+        p.gcalEventId = existingId; gcalIdSet(c.id, 'p', pidx, existingId); saveCotizaciones(cotizaciones);
+        await gcalRequest('PATCH', `/calendars/${GCAL_CAL_ID}/events/${existingId}`, body);
+      } else {
+        const r = await gcalRequest('POST', `/calendars/${GCAL_CAL_ID}/events`, body);
+        if(r && r.id){ p.gcalEventId = r.id; gcalIdSet(c.id, 'p', pidx, r.id); saveCotizaciones(cotizaciones); }
+      }
     }
     if(!gcalToken) gcalEnqueue({ type:'upsert-pago', cid:c.id, pidx });
   }
