@@ -607,10 +607,10 @@
   .prov-name{font-size:13px;font-weight:700;}
   .prov-meta{font-size:11px;color:var(--ink-soft);flex:1;}
   .prov-card-amounts{display:flex;align-items:center;gap:10px;flex-shrink:0;}
-  .prov-card-total{font-size:12.5px;font-weight:700;white-space:nowrap;}
+  .prov-card-total{font-size:11px;font-weight:500;white-space:nowrap;opacity:.7;}
   .prov-card-total.has-pend{color:var(--bad,#C0392B);}
-  .prov-card-total.all-paid{color:var(--cyan-dark,#0A6B57);}
-  .prov-card-pend{font-size:11px;color:var(--bad,#C0392B);font-weight:600;white-space:nowrap;}
+  .prov-card-total.all-paid{color:var(--cyan-dark,#0A6B57);opacity:1;font-weight:700;}
+  .prov-card-pend{font-size:13px;color:var(--bad,#C0392B);font-weight:700;white-space:nowrap;}
   .prov-chevron{font-size:12px;color:var(--ink-soft);transition:.2s;flex-shrink:0;}
   .prov-card.open .prov-chevron{transform:rotate(180deg);}
   .prov-card-body{display:none;border-top:1px solid var(--line);}
@@ -3663,11 +3663,11 @@
     const wrap = $('proveedoresWrap');
     if(!wrap) return;
     // Guardar estado abierto/cerrado por nombre de proveedor
-    const _closedProvs = new Set();
+    const _openProvs = new Set();
     wrap.querySelectorAll('.prov-card').forEach(function(c){
-      if(!c.classList.contains('open')){
+      if(c.classList.contains('open')){
         var nm = c.querySelector('.prov-name');
-        if(nm) _closedProvs.add(nm.textContent.trim());
+        if(nm) _openProvs.add(nm.textContent.trim());
       }
     });
     const _pagadosOpen = wrap.querySelector('#provPagadosSection.open') !== null;
@@ -3842,7 +3842,7 @@
         <div class="inline-edit-wrap"></div>`;
       }).join('');
 
-      return `<div class="prov-card${isPaidCard?' is-paid':''} open" data-prov-name="${escHtml(provName)}">
+      return `<div class="prov-card${isPaidCard?' is-paid':''}" data-prov-name="${escHtml(provName)}">
         <div class="prov-card-top" onclick="toggleProvCard(this)">
           <div class="prov-name">${escHtml(provName)}</div>
           <div class="prov-meta">${escHtml(metaText)}</div>
@@ -3939,16 +3939,11 @@
       </div>` : ''}
       ${sinProvHtml}
     `;
-    // Restaurar estado abierto/cerrado
-    if(_closedProvs.size > 0){
-      wrap.querySelectorAll('.prov-card').forEach(function(c){
-        var nm = c.querySelector('.prov-name');
-        if(nm && _closedProvs.has(nm.textContent.trim())) c.classList.remove('open');
-      });
-    } else if(_closedProvs.size === 0 && wrap.querySelectorAll('.prov-card').length > 0 && !wrap._firstRender) {
-      // primera vez: dejar todo abierto (default)
-    }
-    wrap._firstRender = false;
+    // Restaurar estado abierto/cerrado — por defecto todo cerrado, solo abrir los que estaban abiertos
+    wrap.querySelectorAll('.prov-card').forEach(function(c){
+      var nm = c.querySelector('.prov-name');
+      if(nm && _openProvs.has(nm.textContent.trim())) c.classList.add('open');
+    });
     if(_pagadosOpen){ var ps=$('provPagadosSection'); if(ps) ps.classList.add('open'); }
     if(_summaryOpen){ var sb=$('provSummaryBody'); if(sb){ sb.style.display='block'; var sc=$('provSummarySection'); if(sc){ var ch=sc.querySelector('.pagados-chev'); if(ch) ch.style.transform='rotate(180deg)'; }}}
   }
