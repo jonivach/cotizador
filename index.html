@@ -3314,6 +3314,38 @@
 
     // Input change
     wrap.querySelectorAll('.gasto-nombre, .gasto-monto').forEach(inp => {
+      // Actualizar UI en tiempo real sin guardar
+      inp.addEventListener('input', () => {
+        if(!inp.classList.contains('gasto-monto')) return;
+        const row = inp.closest('[data-gid]');
+        if(!row) return;
+        const cid = row.dataset.cid, pidx = parseInt(row.dataset.pidx);
+        const cidx = cotizaciones.findIndex(x => x.id === cid);
+        if(cidx === -1) return;
+        // Recalcular el total de gastos de esta cotización desde el DOM (sin guardar)
+        const card = wrap.querySelector(`#cont-${cid}`);
+        if(!card) return;
+        const facturado = cotizaciones[cidx].totalAprobado ?? cotizaciones[cidx].total ?? 0;
+        let totalG = 0;
+        card.querySelectorAll('.gasto-monto').forEach(m => { totalG += parseFloat(m.value)||0; });
+        const resultado = facturado - totalG;
+        const margenP   = facturado > 0 ? Math.round(resultado / facturado * 100) : 0;
+        const resBueno  = resultado >= 0;
+        const margenColor = resBueno ? 'var(--good)' : '#c00';
+        const resItems = card.querySelectorAll('.cont-result-item .val');
+        if(resItems.length >= 4){
+          resItems[1].textContent = fmtMoney(totalG);
+          resItems[2].textContent = fmtMoney(resultado);
+          resItems[2].className   = 'val ' + (resBueno?'good':'bad');
+          resItems[3].textContent = facturado > 0 ? margenP + '%' : '—';
+          resItems[3].className   = 'val ' + (resBueno?'good':'bad');
+        }
+        const spans = card.querySelectorAll('.cont-card-head .cf');
+        if(spans.length >= 2){
+          spans[spans.length-1].textContent = facturado > 0 ? margenP + '%' : '—';
+          spans[spans.length-1].style.color = margenColor;
+        }
+      });
       inp.addEventListener('change', () => {
         const row = inp.closest('[data-gid]');
         if(!row) return;
@@ -3330,8 +3362,46 @@
         grupos[pidx].items = items;
         cotizaciones[cidx].gastosReales = grupos;
         saveCotizaciones(cotizaciones);
-        updateContCard(cotizaciones[cidx]);
-        updateContStats();
+        // Actualizar card sin re-renderizar todo (para no cerrar la card abierta)
+        const c = cotizaciones[cidx];
+        const facturado = c.totalAprobado ?? c.total ?? 0;
+        const totalG    = totalGastosC(c);
+        const resultado = facturado - totalG;
+        const margenP   = facturado > 0 ? Math.round(resultado / facturado * 100) : 0;
+        const resBueno  = resultado >= 0;
+        const margenColor = resBueno ? 'var(--good)' : '#c00';
+        const card = wrap.querySelector(`#cont-${c.id}`);
+        if(card){
+          // Actualizar margen en header
+          const spans = card.querySelectorAll('.cont-card-head .cf');
+          if(spans.length >= 2){
+            spans[spans.length-2].textContent = fmtMoney(facturado);
+            spans[spans.length-2].style.color = 'var(--ink)';
+            spans[spans.length-1].textContent = facturado > 0 ? margenP + '%' : '—';
+            spans[spans.length-1].style.color = margenColor;
+          }
+          // Actualizar result strip
+          const resItems = card.querySelectorAll('.cont-result-item .val');
+          if(resItems.length >= 4){
+            resItems[1].textContent = fmtMoney(totalG);
+            resItems[2].textContent = fmtMoney(resultado);
+            resItems[2].className   = 'val ' + (resBueno?'good':'bad');
+            resItems[3].textContent = facturado > 0 ? margenP + '%' : '—';
+            resItems[3].className   = 'val ' + (resBueno?'good':'bad');
+          }
+        }
+        // Actualizar totales del strip superior
+        const aprobadosAll = filtrarPorMes(cotizaciones.filter(x => x.estado === 'aprobada'));
+        const tI = aprobadosAll.reduce((s,x)=>s+(x.totalAprobado??x.total??0),0);
+        const tC = aprobadosAll.reduce((s,x)=>s+totalCobradoC(x),0);
+        const tG = aprobadosAll.reduce((s,x)=>s+totalGastosC(x),0);
+        const tGan = tI - tG;
+        if($('contIngresos'))  $('contIngresos').textContent  = '$ ' + fmt.format(Math.round(tI));
+        if($('contCobrado'))   $('contCobrado').textContent   = '$ ' + fmt.format(Math.round(tC));
+        if($('contPendiente')) $('contPendiente').textContent = '$ ' + fmt.format(Math.round(tI-tC));
+        if($('contGastos'))    $('contGastos').textContent    = '$ ' + fmt.format(Math.round(tG));
+        if($('contGanancia'))  $('contGanancia').textContent  = '$ ' + fmt.format(Math.round(tGan));
+        if($('contMargen'))    $('contMargen').textContent    = tI > 0 ? Math.round(tGan/tI*100)+'%' : '—';
       });
     });
 
