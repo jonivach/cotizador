@@ -3194,7 +3194,7 @@
         let found=false;
         // dots first
         (_ovLastJobs||[]).forEach((v,i)=>{
-          if(i>_ovLastMonth||!v)return;
+          if((_ovLastMonth!==-1&&i>_ovLastMonth)||!v)return;
           const x=padL+i*g+g/2,y=padT+cH-(v/maxJ2)*cH;
           if(Math.sqrt((mx-x)**2+(my-y)**2)<12){
             tip.style.display='block';
