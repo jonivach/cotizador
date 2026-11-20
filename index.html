@@ -106,6 +106,9 @@
   .ov-chart-legend{display:flex;gap:16px;}
   .ov-leg{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--ink-soft);}
   .ov-leg-dot{width:8px;height:8px;border-radius:50%;}
+  .ov-year-sel{display:flex;gap:4px;margin-left:12px;}
+  .ov-year-btn{background:none;border:1px solid var(--line);border-radius:6px;padding:3px 10px;font-size:11px;font-weight:600;color:var(--ink-soft);cursor:pointer;transition:all .15s;}
+  .ov-year-btn.active{background:var(--ink);color:var(--bg);border-color:var(--ink);}
   .ov-chart-wrap{position:relative;height:130px;}
   #ovYearChart{width:100%;height:100%;display:block;}
 
@@ -923,9 +926,15 @@
             <div><span class="ov-chart-total-val purple" id="ovTotalProyAnio">0</span><span class="ov-chart-total-lbl">proyectos</span></div>
           </div>
         </div>
-        <div class="ov-chart-legend">
-          <div class="ov-leg"><div class="ov-leg-dot" style="background:var(--good)"></div>Facturado</div>
-          <div class="ov-leg"><div class="ov-leg-dot" style="background:#7C3AED"></div>Proyectos</div>
+        <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+          <div class="ov-chart-legend">
+            <div class="ov-leg"><div class="ov-leg-dot" style="background:var(--good)"></div>Facturado</div>
+            <div class="ov-leg"><div class="ov-leg-dot" style="background:#7C3AED"></div>Proyectos</div>
+          </div>
+          <div class="ov-year-sel">
+            <button class="ov-year-btn" id="ovYearBtn2025" onclick="ovSelectYear(2025)">2025</button>
+            <button class="ov-year-btn active" id="ovYearBtn2026" onclick="ovSelectYear(2026)">2026</button>
+          </div>
         </div>
       </div>
       <div class="ov-chart-wrap"><canvas id="ovYearChart"></canvas></div>
@@ -2903,10 +2912,28 @@
   // OVERVIEW DASHBOARD
   // ======================================================
   let _ovChartDrawn = false;
+  let _ovSelectedYear = new Date().getFullYear();
+
+  // Datos históricos del sheet (Google Sheets "Proyectos y Facturas")
+  const HIST_BILLING_2025 = [122200,6773975,5965605,20595750,8415912,3474000,28986500,10911000,9437500,8477180,8186500,7061500];
+  const HIST_JOBS_2025    = [1,9,12,13,15,7,12,10,8,12,15,17];
+  // 2026 Ene–Sep desde sheet; Oct–Dic se completa con Firestore
+  const HIST_BILLING_2026 = [4034000,4725600,31959098,17424660,6659500,13148100,3590000,5914267,19885200,0,0,0];
+  const HIST_JOBS_2026    = [10,6,25,12,13,9,3,12,13,0,0,0];
+  // Mes a partir del cual usamos Firestore para 2026 (octubre = índice 9)
+  const HIST_2026_CUTOFF  = 9;
+
+  function ovSelectYear(y){
+    _ovSelectedYear = y;
+    document.getElementById('ovYearBtn2025').classList.toggle('active', y===2025);
+    document.getElementById('ovYearBtn2026').classList.toggle('active', y===2026);
+    try{ renderOverview(); }catch(e){}
+  }
 
   function renderOverview(){
     const now = new Date();
-    const year = now.getFullYear();
+    const curYear = now.getFullYear();
+    const year = _ovSelectedYear;
     const month = now.getMonth(); // 0-based
     const todayStr = now.toISOString().slice(0,10);
     const in10 = new Date(now); in10.setDate(now.getDate() + 10);
@@ -2915,23 +2942,46 @@
     const aprobadas = cotizaciones.filter(c => c.estado === 'aprobada');
 
     // ---- GRÁFICO ANUAL ----
-    const billing = Array(12).fill(0);
-    const jobsCount = Array(12).fill(0);
-    aprobadas.forEach(c => {
-      const fechaRef = c.fechaAprobacion || c.fecha || '';
-      if(!fechaRef) return;
-      const d = new Date(fechaRef);
-      if(d.getFullYear() !== year) return;
-      const m = d.getMonth();
-      billing[m] += (c.totalAprobado ?? c.total ?? 0);
-      jobsCount[m]++;
-    });
-    const totalAnio = billing.reduce((a,b)=>a+b,0);
-    const totalProyAnio = jobsCount.reduce((a,b)=>a+b,0);
+    let billing, jobsCount;
+
+    if(year === 2025){
+      billing   = HIST_BILLING_2025.slice();
+      jobsCount = HIST_JOBS_2025.slice();
+    } else if(year === 2026){
+      // Ene–Sep: datos históricos del sheet; Oct–Dic: Firestore
+      billing   = HIST_BILLING_2026.slice();
+      jobsCount = HIST_JOBS_2026.slice();
+      aprobadas.forEach(c => {
+        const fechaRef = c.fechaAprobacion || c.fecha || '';
+        if(!fechaRef) return;
+        const d = new Date(fechaRef);
+        if(d.getFullYear() !== 2026) return;
+        const m = d.getMonth();
+        if(m < HIST_2026_CUTOFF) return; // ya cubierto por sheet
+        billing[m]   += (c.totalAprobado ?? c.total ?? 0);
+        jobsCount[m]++;
+      });
+    } else {
+      // Año corriente sin histórico
+      billing   = Array(12).fill(0);
+      jobsCount = Array(12).fill(0);
+      aprobadas.forEach(c => {
+        const fechaRef = c.fechaAprobacion || c.fecha || '';
+        if(!fechaRef) return;
+        const d = new Date(fechaRef);
+        if(d.getFullYear() !== year) return;
+        billing[d.getMonth()]   += (c.totalAprobado ?? c.total ?? 0);
+        jobsCount[d.getMonth()]++;
+      });
+    }
+
+    const totalAnio    = billing.reduce((a,b)=>a+b,0);
+    const totalProyAnio= jobsCount.reduce((a,b)=>a+b,0);
     document.getElementById('ovChartYear').textContent = year;
     document.getElementById('ovTotalAnio').textContent = fmtPesos(totalAnio);
     document.getElementById('ovTotalProyAnio').textContent = totalProyAnio;
-    ovDrawChart(billing, jobsCount, month);
+    // Para 2025 no hay "mes actual" resaltado
+    ovDrawChart(billing, jobsCount, year === curYear ? month : -1);
 
     // ---- STATS ----
     // Pendiente cobro
@@ -3092,34 +3142,38 @@
     // grid
     ctx.strokeStyle = gridColor; ctx.lineWidth = 0.5;
     for(let i=0;i<=4;i++){const y=padT+chartH*(1-i/4);ctx.beginPath();ctx.moveTo(padL,y);ctx.lineTo(padL+chartW,y);ctx.stroke();}
+    const fullYear = currentMonth === -1; // modo año histórico completo
+    const drawUpTo = fullYear ? 11 : currentMonth;
     // bars
     billing.forEach((v,i)=>{
       if(!v) return;
       const x=padL+i*gap+gap/2-barW/2, bh=(v/maxB)*chartH, y=padT+chartH-bh;
-      let alpha = i===currentMonth?1:i>currentMonth?0.12:0.5;
+      let alpha = fullYear ? 0.65 : (i===currentMonth?1:i>currentMonth?0.12:0.5);
       ctx.fillStyle=`rgba(${barColorBase},${alpha})`;
       const r=Math.min(3,barW/2);
       ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+barW-r,y);ctx.quadraticCurveTo(x+barW,y,x+barW,y+r);ctx.lineTo(x+barW,padT+chartH);ctx.lineTo(x,padT+chartH);ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);ctx.closePath();ctx.fill();
     });
     // line
     ctx.beginPath();
+    let lineStarted = false;
     jobsArr.forEach((v,i)=>{
-      if(i>currentMonth)return;
+      if(i>drawUpTo)return;
       const x=padL+i*gap+gap/2, y=padT+chartH-(v/maxJ)*chartH;
-      i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+      if(!lineStarted){ctx.moveTo(x,y);lineStarted=true;}else{ctx.lineTo(x,y);}
     });
     ctx.strokeStyle=lineColor;ctx.lineWidth=1.5;ctx.lineJoin='round';ctx.stroke();
     // dots
     jobsArr.forEach((v,i)=>{
-      if(i>currentMonth||!v)return;
+      if(i>drawUpTo||!v)return;
       const x=padL+i*gap+gap/2, y=padT+chartH-(v/maxJ)*chartH;
-      ctx.beginPath();ctx.arc(x,y,i===currentMonth?4:2.5,0,Math.PI*2);ctx.fillStyle=dotColor;ctx.fill();
+      const isCur = !fullYear && i===currentMonth;
+      ctx.beginPath();ctx.arc(x,y,isCur?4:2.5,0,Math.PI*2);ctx.fillStyle=dotColor;ctx.fill();
     });
     // labels
     ctx.textAlign='center';ctx.font=`500 9px 'Space Grotesk',sans-serif`;
     months.forEach((m,i)=>{
       const x=padL+i*gap+gap/2;
-      ctx.fillStyle=i===currentMonth?labelColorBold:labelColorDim;
+      ctx.fillStyle=(fullYear||i===currentMonth)?labelColorBold:labelColorDim;
       ctx.fillText(m,x,H-5);
     });
     // tooltip on hover
