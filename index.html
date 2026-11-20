@@ -2978,11 +2978,6 @@
     document.getElementById('ovFacturadoMes').textContent = fmtPesos(facturadoMes);
     document.getElementById('ovFacturadoMesLbl').textContent = now.toLocaleString('es-AR',{month:'long',year:'numeric'});
 
-    // Total aprobados
-    const completados = aprobadas.filter(c=>(c.estadoProyecto||'en-curso')==='completado').length;
-    document.getElementById('ovTotalAprobados').textContent = aprobadas.length;
-    document.getElementById('ovTotalAprobadosSub').textContent = `${completados} completado${completados!==1?'s':''}`;
-
     // ---- VENCIMIENTOS (próximos 10 días) ----
     const eventos = [];
     aprobadas.forEach(c => {
