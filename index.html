@@ -4315,7 +4315,11 @@
       const groups = getProvGroups(provName);
       groups.sort((a,b) => {
         const ap = a.items.some(x=>!x.pagado), bp = b.items.some(x=>!x.pagado);
-        return (bp?1:0) - (ap?1:0);
+        if(ap !== bp) return (bp?1:0) - (ap?1:0); // pendientes primero
+        // dentro de cada grupo, orden por número de cotización ascendente
+        const na = parseInt((a.num||'').replace(/\D/g,'')) || 0;
+        const nb = parseInt((b.num||'').replace(/\D/g,'')) || 0;
+        return na - nb;
       });
       const total = groups.reduce((s,g) => s+g.items.reduce((ss,c)=>ss+(c.total||0),0), 0);
       const pendiente = groups.reduce((s,g) => s+g.items.filter(c=>!c.pagado).reduce((ss,c)=>ss+(c.total||0),0), 0);
