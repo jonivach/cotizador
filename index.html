@@ -109,7 +109,7 @@
   .ov-chart-wrap{position:relative;height:130px;}
   #ovYearChart{width:100%;height:100%;display:block;}
 
-  .ov-stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:18px;}
+  .ov-stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px;}
   @media(max-width:900px){.ov-stats-row{grid-template-columns:repeat(2,1fr);}}
   .ov-stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;}
   .ov-stat-label{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-soft);margin-bottom:8px;font-weight:600;}
@@ -934,16 +934,6 @@
     <!-- Stats -->
     <div class="ov-stats-row">
       <div class="ov-stat">
-        <div class="ov-stat-label">Pendiente cobro</div>
-        <div class="ov-stat-val red" id="ovPendCobro">$0</div>
-        <div class="ov-stat-names" id="ovPendCobroNames">—</div>
-      </div>
-      <div class="ov-stat">
-        <div class="ov-stat-label">Pago proveedores</div>
-        <div class="ov-stat-val red" id="ovPendProv">$0</div>
-        <div class="ov-stat-names" id="ovPendProvNames">—</div>
-      </div>
-      <div class="ov-stat">
         <div class="ov-stat-label">Proyectos activos</div>
         <div class="ov-stat-val" id="ovProyActivos">0</div>
         <div class="ov-stat-sub" id="ovProyActivosSub">de 0 totales</div>
@@ -954,9 +944,14 @@
         <div class="ov-stat-sub" id="ovFacturadoMesLbl">este mes</div>
       </div>
       <div class="ov-stat">
-        <div class="ov-stat-label">Total aprobados</div>
-        <div class="ov-stat-val" id="ovTotalAprobados">0</div>
-        <div class="ov-stat-sub" id="ovTotalAprobadosSub">0 completados</div>
+        <div class="ov-stat-label">Pendiente cobro</div>
+        <div class="ov-stat-val red" id="ovPendCobro">$0</div>
+        <div class="ov-stat-names" id="ovPendCobroNames">—</div>
+      </div>
+      <div class="ov-stat">
+        <div class="ov-stat-label">Pago proveedores</div>
+        <div class="ov-stat-val red" id="ovPendProv">$0</div>
+        <div class="ov-stat-names" id="ovPendProvNames">—</div>
       </div>
     </div>
 
