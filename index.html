@@ -932,8 +932,8 @@
             <div class="ov-leg"><div class="ov-leg-dot" style="background:#7C3AED"></div>Proyectos</div>
           </div>
           <div class="ov-year-sel">
-            <button class="ov-year-btn" id="ovYearBtn2025" onclick="ovSelectYear(2025)">2025</button>
-            <button class="ov-year-btn active" id="ovYearBtn2026" onclick="ovSelectYear(2026)">2026</button>
+            <button class="ov-year-btn" id="ovYearBtn2025">2025</button>
+            <button class="ov-year-btn active" id="ovYearBtn2026">2026</button>
           </div>
         </div>
       </div>
@@ -1382,6 +1382,8 @@
   document.querySelectorAll('.tabbtn').forEach(btn => {
     btn.addEventListener('click', () => switchTab(btn.dataset.tab));
   });
+  document.getElementById('ovYearBtn2025').addEventListener('click', () => ovSelectYear(2025));
+  document.getElementById('ovYearBtn2026').addEventListener('click', () => ovSelectYear(2026));
 
   // ======================================================
   // ESTADO
