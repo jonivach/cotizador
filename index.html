@@ -109,7 +109,7 @@
   .ov-chart-wrap{position:relative;height:130px;}
   #ovYearChart{width:100%;height:100%;display:block;}
 
-  .ov-stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px;}
+  .ov-stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:18px;}
   @media(max-width:900px){.ov-stats-row{grid-template-columns:repeat(2,1fr);}}
   .ov-stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;}
   .ov-stat-label{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-soft);margin-bottom:8px;font-weight:600;}
@@ -952,6 +952,11 @@
         <div class="ov-stat-label">Facturado</div>
         <div class="ov-stat-val green" id="ovFacturadoMes">$0</div>
         <div class="ov-stat-sub" id="ovFacturadoMesLbl">este mes</div>
+      </div>
+      <div class="ov-stat">
+        <div class="ov-stat-label">Total aprobados</div>
+        <div class="ov-stat-val" id="ovTotalAprobados">0</div>
+        <div class="ov-stat-sub" id="ovTotalAprobadosSub">0 completados</div>
       </div>
     </div>
 
@@ -2978,12 +2983,17 @@
     document.getElementById('ovFacturadoMes').textContent = fmtPesos(facturadoMes);
     document.getElementById('ovFacturadoMesLbl').textContent = now.toLocaleString('es-AR',{month:'long',year:'numeric'});
 
+    // Total aprobados
+    const completados = aprobadas.filter(c=>(c.estadoProyecto||'en-curso')==='completado').length;
+    document.getElementById('ovTotalAprobados').textContent = aprobadas.length;
+    document.getElementById('ovTotalAprobadosSub').textContent = `${completados} completado${completados!==1?'s':''}`;
+
     // ---- VENCIMIENTOS (próximos 10 días) ----
     const eventos = [];
     aprobadas.forEach(c => {
       if((c.estadoProyecto||'en-curso') === 'completado') return;
       const nombre = [c.agencia, c.empresa].filter(Boolean).join(' / ') || c.marca || 'Sin nombre';
-      const cot = c.quoteNum ? `Cot-${c.quoteNum}` : c.id.slice(0,6);
+      const cot = c.num || '—';
       const total = c.totalAprobado ?? c.total ?? 0;
       (c.entregas||[]).filter(e=>e.fecha && e.fecha >= todayStr && e.fecha <= in10Str && !e.entregado).forEach(e=>{
         eventos.push({ fecha: e.fecha, tipo: 'entrega', nombre, cot, monto: null });
@@ -3031,7 +3041,7 @@
       proyEl.innerHTML = actSorted.map(c => {
         const ep = c.estadoProyecto || 'en-curso';
         const nombre = [c.agencia, c.empresa].filter(Boolean).join(' / ') || c.marca || 'Sin nombre';
-        const cot = c.quoteNum ? `Cot-${c.quoteNum}` : c.id.slice(0,6);
+        const cot = c.num || '—';
         return `<div class="ov-proj-row">
           <div class="ov-proj-accent ${ep}"></div>
           <div class="ov-proj-inner">
@@ -4937,6 +4947,28 @@
           <div class="anal-kpi"><div class="anal-kpi-lbl">Cobrado</div><div class="anal-kpi-val" style="color:${CY};font-size:15px;">${fmtM(cobrado)}</div></div>
           <div class="anal-kpi"><div class="anal-kpi-lbl">Pend. cobro</div><div class="anal-kpi-val" style="color:${AM};font-size:15px;">${fmtM(pendienteCobro)}</div></div>
         </div>
+        ${(()=>{
+          const pendRows = [];
+          aprobados.forEach(c=>{
+            const ep = c.estadoProyecto||'en-curso';
+            if(ep==='completado') return;
+            const t = c.totalAprobado??c.total??0;
+            const pend = (c.pagos||[]).filter(p=>!p.cobrado&&(p.porcentaje||0)>0).reduce((s,p)=>s+t*(p.porcentaje||0)/100,0);
+            if(pend>0){
+              const nombre = [c.agencia,c.empresa].filter(Boolean).join(' / ')||c.marca||'—';
+              pendRows.push({nombre, pend, num: c.num||'—'});
+            }
+          });
+          if(!pendRows.length) return '';
+          pendRows.sort((a,b)=>b.pend-a.pend);
+          return `<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--line);">
+            <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-soft);font-weight:600;margin-bottom:8px;">Detalle pendiente de cobro</div>
+            ${pendRows.map(r=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--line);">
+              <div><div style="font-size:12px;font-weight:600;color:var(--ink);">${escHtml(r.nombre)}</div><div style="font-size:10.5px;color:var(--ink-soft);">${escHtml(r.num)}</div></div>
+              <div style="font-size:13px;font-weight:700;color:${AM};">${fmtM(r.pend)}</div>
+            </div>`).join('')}
+          </div>`;
+        })()}
       </div>
 
       <div class="anal-section">
