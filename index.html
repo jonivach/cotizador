@@ -86,11 +86,87 @@
   @media(max-width:900px){.tabbar{flex-wrap:wrap;padding:8px 16px;}.tabbar-actions{margin-left:0;width:100%;justify-content:flex-end;padding:6px 0 2px;}}
   .tabbtn{background:none;border:none;padding:14px 18px 12px;font-family:'Space Grotesk',sans-serif;text-transform:uppercase;letter-spacing:.04em;font-size:13px;font-weight:500;color:var(--ink-soft);cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;display:flex;align-items:center;gap:8px;}
   .tabbtn .dot{width:8px;height:8px;border-radius:50%;flex:none;}
+  .tabbtn[data-tab="overview"] .dot{background:#1A1A18;}
   .tabbtn[data-tab="cotizador"] .dot{background:var(--cyan);}
   .tabbtn[data-tab="cotizaciones"] .dot{background:var(--yellow);}
   .tabbtn[data-tab="aprobados"] .dot{background:var(--good);}
   .tabbtn[data-tab="contable"] .dot{background:var(--magenta);}
   .tabbtn[data-tab="proveedores"] .dot{background:#7C3AED;}
+
+  /* ===== OVERVIEW DASHBOARD ===== */
+  #tab-overview{padding:22px 28px 40px;}
+  .ov-chart-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin-bottom:18px;}
+  .ov-chart-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;}
+  .ov-chart-title{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-soft);}
+  .ov-chart-totals{display:flex;gap:16px;}
+  .ov-chart-total-val{font-size:13px;font-weight:700;}
+  .ov-chart-total-val.green{color:var(--good);}
+  .ov-chart-total-val.purple{color:#7C3AED;}
+  .ov-chart-total-lbl{font-size:10px;font-weight:500;color:var(--ink-soft);margin-left:3px;}
+  .ov-chart-legend{display:flex;gap:16px;}
+  .ov-leg{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--ink-soft);}
+  .ov-leg-dot{width:8px;height:8px;border-radius:50%;}
+  .ov-chart-wrap{position:relative;height:130px;}
+  #ovYearChart{width:100%;height:100%;display:block;}
+
+  .ov-stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px;}
+  @media(max-width:900px){.ov-stats-row{grid-template-columns:repeat(2,1fr);}}
+  .ov-stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;}
+  .ov-stat-label{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-soft);margin-bottom:8px;font-weight:600;}
+  .ov-stat-val{font-size:22px;font-weight:800;line-height:1;letter-spacing:-.02em;color:var(--ink);}
+  .ov-stat-val.red{color:var(--bad);}
+  .ov-stat-val.green{color:var(--good);}
+  .ov-stat-sub{font-size:10.5px;color:var(--ink-soft);margin-top:5px;}
+  .ov-stat-names{font-size:10.5px;color:var(--ink-soft);margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+  .ov-three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+  @media(max-width:900px){.ov-three-col{grid-template-columns:1fr;}}
+  .ov-section-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.12em;color:var(--ink-soft);margin-bottom:8px;}
+  .ov-card{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;}
+  .ov-empty{padding:16px;font-size:12px;color:var(--ink-soft);text-align:center;}
+
+  /* Vencimientos */
+  .ov-ev-row{display:flex;align-items:stretch;border-bottom:1px solid var(--line);}
+  .ov-ev-row:last-child{border-bottom:none;}
+  .ov-ev-accent{width:3px;flex-shrink:0;}
+  .ov-ev-accent.pago{background:#7C3AED;}
+  .ov-ev-accent.entrega{background:var(--bad);}
+  .ov-ev-inner{display:flex;align-items:center;gap:11px;padding:10px 13px;flex:1;min-width:0;}
+  .ov-ev-date{text-align:center;min-width:30px;flex-shrink:0;}
+  .ov-ev-mon{font-size:9px;color:var(--ink-soft);text-transform:uppercase;font-weight:600;line-height:1;}
+  .ov-ev-day{font-size:17px;font-weight:800;line-height:1.1;letter-spacing:-.02em;color:var(--ink);}
+  .ov-ev-day.hoy{color:var(--bad);}
+  .ov-ev-sep{width:0.5px;height:26px;background:var(--line);flex-shrink:0;}
+  .ov-ev-info{flex:1;min-width:0;}
+  .ov-ev-title{font-size:12.5px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .ov-ev-sub{font-size:10.5px;color:var(--ink-soft);margin-top:1px;}
+  .ov-ev-type{font-size:10px;font-weight:700;flex-shrink:0;}
+  .ov-ev-type.pago{color:#7C3AED;}
+  .ov-ev-type.entrega{color:var(--bad);}
+
+  /* Proyectos */
+  .ov-proj-row{display:flex;align-items:stretch;border-bottom:1px solid var(--line);}
+  .ov-proj-row:last-child{border-bottom:none;}
+  .ov-proj-accent{width:3px;flex-shrink:0;}
+  .ov-proj-accent.en-curso{background:var(--yellow);}
+  .ov-proj-accent.entregado-nc{background:#EA580C;}
+  .ov-proj-accent.no-ent-cob{background:#7C3AED;}
+  .ov-proj-inner{display:flex;flex-direction:column;padding:10px 13px;flex:1;min-width:0;}
+  .ov-proj-name{font-size:12.5px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .ov-proj-meta{display:flex;align-items:center;justify-content:space-between;margin-top:3px;}
+  .ov-proj-cot{font-size:10.5px;color:var(--ink-soft);}
+  .ov-proj-status{font-size:10px;font-weight:700;}
+  .ov-proj-status.en-curso{color:var(--yellow);}
+  .ov-proj-status.entregado-nc{color:#EA580C;}
+  .ov-proj-status.no-ent-cob{color:#7C3AED;}
+
+  /* Proveedores */
+  .ov-prov-row{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--line);}
+  .ov-prov-row:last-child{border-bottom:none;}
+  .ov-prov-name{font-size:12.5px;font-weight:700;color:var(--ink);}
+  .ov-prov-items{font-size:10.5px;color:var(--ink-soft);margin-top:2px;}
+  .ov-prov-amt{font-size:15px;font-weight:800;color:var(--bad);letter-spacing:-.01em;}
+  .ov-prov-amt.muted{color:var(--ink-soft);font-size:13px;font-weight:600;}
 
   /* Contable cards */
   #contableWrap{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;}
@@ -819,6 +895,7 @@
 
   <!-- Tabbar -->
   <div class="tabbar">
+    <button class="tabbtn" data-tab="overview"><span class="dot"></span>Overview</button>
     <button class="tabbtn active" data-tab="cotizador"><span class="dot"></span>Cotizador</button>
     <button class="tabbtn" data-tab="cotizaciones"><span class="dot"></span>Cotizaciones realizadas <span class="count" id="countCotizaciones">0</span></button>
     <button class="tabbtn" data-tab="aprobados"><span class="dot"></span>Proyectos aprobados <span class="count" id="countAprobados">0</span></button>
@@ -831,6 +908,74 @@
     <div class="loading-spin"></div>
     Cargando datos…
   </div>
+
+  <!-- ===== TAB: OVERVIEW ===== -->
+  <section class="tabpanel" id="tab-overview">
+  <div id="ovWrap">
+
+    <!-- Chart -->
+    <div class="ov-chart-card">
+      <div class="ov-chart-header">
+        <div style="display:flex;align-items:baseline;gap:20px;flex-wrap:wrap;">
+          <div class="ov-chart-title">Facturación <span id="ovChartYear"></span></div>
+          <div class="ov-chart-totals">
+            <div><span class="ov-chart-total-val green" id="ovTotalAnio">$0</span><span class="ov-chart-total-lbl">total año</span></div>
+            <div><span class="ov-chart-total-val purple" id="ovTotalProyAnio">0</span><span class="ov-chart-total-lbl">proyectos</span></div>
+          </div>
+        </div>
+        <div class="ov-chart-legend">
+          <div class="ov-leg"><div class="ov-leg-dot" style="background:var(--good)"></div>Facturado</div>
+          <div class="ov-leg"><div class="ov-leg-dot" style="background:#7C3AED"></div>Proyectos</div>
+        </div>
+      </div>
+      <div class="ov-chart-wrap"><canvas id="ovYearChart"></canvas></div>
+    </div>
+
+    <!-- Stats -->
+    <div class="ov-stats-row">
+      <div class="ov-stat">
+        <div class="ov-stat-label">Pendiente cobro</div>
+        <div class="ov-stat-val red" id="ovPendCobro">$0</div>
+        <div class="ov-stat-names" id="ovPendCobroNames">—</div>
+      </div>
+      <div class="ov-stat">
+        <div class="ov-stat-label">Pago proveedores</div>
+        <div class="ov-stat-val red" id="ovPendProv">$0</div>
+        <div class="ov-stat-names" id="ovPendProvNames">—</div>
+      </div>
+      <div class="ov-stat">
+        <div class="ov-stat-label">Proyectos activos</div>
+        <div class="ov-stat-val" id="ovProyActivos">0</div>
+        <div class="ov-stat-sub" id="ovProyActivosSub">de 0 totales</div>
+      </div>
+      <div class="ov-stat">
+        <div class="ov-stat-label">Facturado</div>
+        <div class="ov-stat-val green" id="ovFacturadoMes">$0</div>
+        <div class="ov-stat-sub" id="ovFacturadoMesLbl">este mes</div>
+      </div>
+    </div>
+
+    <!-- Three cols -->
+    <div class="ov-three-col">
+      <!-- Vencimientos -->
+      <div>
+        <div class="ov-section-label">Próximos vencimientos · 10 días</div>
+        <div class="ov-card" id="ovVencimientos"><div class="ov-empty">Sin vencimientos próximos</div></div>
+      </div>
+      <!-- Proyectos -->
+      <div>
+        <div class="ov-section-label">Proyectos en curso</div>
+        <div class="ov-card" id="ovProyectos"><div class="ov-empty">Sin proyectos activos</div></div>
+      </div>
+      <!-- Proveedores -->
+      <div>
+        <div class="ov-section-label">Proveedores pendientes</div>
+        <div class="ov-card" id="ovProveedores"><div class="ov-empty">Sin pagos pendientes</div></div>
+      </div>
+    </div>
+
+  </div>
+  </section>
 
   <!-- ===== TAB: COTIZADOR ===== -->
   <section class="tabpanel active" id="tab-cotizador">
@@ -1217,6 +1362,7 @@
     if(btn) btn.classList.add('active');
     if(panel) panel.classList.add('active');
     localStorage.setItem('vach_active_tab', tabName);
+    if(tabName === 'overview')   try{ renderOverview();    }catch(e){}
     if(tabName === 'cotizaciones') renderCotizaciones();
     if(tabName === 'aprobados') try{ renderAprobados(); }catch(e){}
     if(tabName === 'contable')  try{ renderContable();  }catch(e){}
@@ -1674,6 +1820,7 @@
       try{ renderContable(); }catch(e){ console.warn('renderContable error:', e); }
       try{ renderCalendario(); }catch(e){ console.warn('renderCalendario error:', e); }
       try{ renderProveedores(); }catch(e){}
+      try{ renderOverview(); }catch(e){}
       try{ updateFirestoreUsage(); }catch(e){}
       // Actualizar número de cotización con el último número real
       if(!currentEditId && $('quoteNum')) $('quoteNum').value = nextQuoteNum();
@@ -2751,6 +2898,273 @@
     else                           nuevo = 'en-curso';
     cotizaciones[cidx].estadoProyecto = nuevo;
   }
+
+  // ======================================================
+  // OVERVIEW DASHBOARD
+  // ======================================================
+  let _ovChartDrawn = false;
+
+  function renderOverview(){
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth(); // 0-based
+    const todayStr = now.toISOString().slice(0,10);
+    const in10 = new Date(now); in10.setDate(now.getDate() + 10);
+    const in10Str = in10.toISOString().slice(0,10);
+
+    const aprobadas = cotizaciones.filter(c => c.estado === 'aprobada');
+
+    // ---- GRÁFICO ANUAL ----
+    const billing = Array(12).fill(0);
+    const jobsCount = Array(12).fill(0);
+    aprobadas.forEach(c => {
+      const fechaRef = c.fechaAprobacion || c.fecha || '';
+      if(!fechaRef) return;
+      const d = new Date(fechaRef);
+      if(d.getFullYear() !== year) return;
+      const m = d.getMonth();
+      billing[m] += (c.totalAprobado ?? c.total ?? 0);
+      jobsCount[m]++;
+    });
+    const totalAnio = billing.reduce((a,b)=>a+b,0);
+    const totalProyAnio = jobsCount.reduce((a,b)=>a+b,0);
+    document.getElementById('ovChartYear').textContent = year;
+    document.getElementById('ovTotalAnio').textContent = fmtPesos(totalAnio);
+    document.getElementById('ovTotalProyAnio').textContent = totalProyAnio;
+    ovDrawChart(billing, jobsCount, month);
+
+    // ---- STATS ----
+    // Pendiente cobro
+    let pendCobroTotal = 0;
+    const pendCobroNames = [];
+    aprobadas.forEach(c => {
+      const ep = c.estadoProyecto || 'en-curso';
+      if(ep === 'completado') return;
+      const total = c.totalAprobado ?? c.total ?? 0;
+      const pagos = (c.pagos||[]).filter(p=>(p.porcentaje||0)>0||p.cobrado);
+      const pend = pagos.filter(p=>!p.cobrado).reduce((s,p)=>s+total*(p.porcentaje||0)/100, 0);
+      if(pend > 0){
+        pendCobroTotal += pend;
+        const nombre = [c.agencia, c.empresa].filter(Boolean).join(' / ') || c.marca || 'Sin nombre';
+        if(!pendCobroNames.includes(nombre)) pendCobroNames.push(nombre);
+      }
+    });
+    document.getElementById('ovPendCobro').textContent = fmtPesos(pendCobroTotal);
+    document.getElementById('ovPendCobroNames').textContent = pendCobroNames.slice(0,4).join(' · ') || '—';
+
+    // Pago proveedores (usa el array global `compras`)
+    let pendProvTotal = 0;
+    const pendProvNames = [];
+    const provMap = {};
+    (compras||[]).filter(x => !x.pagado).forEach(x => {
+      const nombre = (x.proveedor && x.proveedor.trim() && x.proveedor !== '—') ? x.proveedor.trim() : 'Sin asignar';
+      if(!provMap[nombre]) provMap[nombre] = 0;
+      provMap[nombre] += (x.total || 0);
+      pendProvTotal += (x.total || 0);
+    });
+    Object.entries(provMap).forEach(([n,v])=>{ if(v>0 && n!=='Sin asignar') pendProvNames.push(n); });
+    document.getElementById('ovPendProv').textContent = fmtPesos(pendProvTotal);
+    document.getElementById('ovPendProvNames').textContent = pendProvNames.slice(0,4).join(' · ') || '—';
+
+    // Proyectos activos (no completado)
+    const activos = aprobadas.filter(c => (c.estadoProyecto||'en-curso') !== 'completado');
+    document.getElementById('ovProyActivos').textContent = activos.length;
+    document.getElementById('ovProyActivosSub').textContent = `de ${aprobadas.length} totales`;
+
+    // Facturado este mes
+    const facturadoMes = aprobadas
+      .filter(c => { const f = c.fechaAprobacion||c.fecha||''; return f.startsWith(todayStr.slice(0,7)); })
+      .reduce((s,c) => s + (c.totalAprobado??c.total??0), 0);
+    document.getElementById('ovFacturadoMes').textContent = fmtPesos(facturadoMes);
+    document.getElementById('ovFacturadoMesLbl').textContent = now.toLocaleString('es-AR',{month:'long',year:'numeric'});
+
+    // ---- VENCIMIENTOS (próximos 10 días) ----
+    const eventos = [];
+    aprobadas.forEach(c => {
+      if((c.estadoProyecto||'en-curso') === 'completado') return;
+      const nombre = [c.agencia, c.empresa].filter(Boolean).join(' / ') || c.marca || 'Sin nombre';
+      const cot = c.quoteNum ? `Cot-${c.quoteNum}` : c.id.slice(0,6);
+      const total = c.totalAprobado ?? c.total ?? 0;
+      (c.entregas||[]).filter(e=>e.fecha && e.fecha >= todayStr && e.fecha <= in10Str && !e.entregado).forEach(e=>{
+        eventos.push({ fecha: e.fecha, tipo: 'entrega', nombre, cot, monto: null });
+      });
+      (c.pagos||[]).filter(p=>p.fecha && p.fecha >= todayStr && p.fecha <= in10Str && !p.cobrado && (p.porcentaje||0)>0).forEach(p=>{
+        eventos.push({ fecha: p.fecha, tipo: 'pago', nombre, cot, monto: total*(p.porcentaje||0)/100 });
+      });
+    });
+    eventos.sort((a,b)=>a.fecha.localeCompare(b.fecha));
+    const vencEl = document.getElementById('ovVencimientos');
+    if(!eventos.length){
+      vencEl.innerHTML = '<div class="ov-empty">Sin vencimientos en los próximos 10 días</div>';
+    } else {
+      const months = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+      vencEl.innerHTML = eventos.map(ev => {
+        const d = new Date(ev.fecha + 'T12:00:00');
+        const isHoy = ev.fecha === todayStr;
+        const monLbl = isHoy ? 'hoy' : months[d.getMonth()];
+        const dayClass = isHoy ? 'hoy' : '';
+        const subHtml = ev.tipo === 'pago' && ev.monto
+          ? `${ev.cot} · <strong style="color:var(--ink)">${fmtPesos(ev.monto)}</strong>`
+          : ev.cot;
+        return `<div class="ov-ev-row">
+          <div class="ov-ev-accent ${ev.tipo}"></div>
+          <div class="ov-ev-inner">
+            <div class="ov-ev-date"><div class="ov-ev-mon">${monLbl}</div><div class="ov-ev-day ${dayClass}">${d.getDate()}</div></div>
+            <div class="ov-ev-sep"></div>
+            <div class="ov-ev-info"><div class="ov-ev-title">${escHtml(ev.nombre)}</div><div class="ov-ev-sub">${subHtml}</div></div>
+            <div class="ov-ev-type ${ev.tipo}">${ev.tipo === 'pago' ? 'Pago' : 'Entrega'}</div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    // ---- PROYECTOS EN CURSO (excluyendo completados) ----
+    const EP_LABEL = { 'en-curso': 'En curso', 'entregado-nc': 'Entregado / NC', 'no-ent-cob': 'No ent. cobrado' };
+    const proyEl = document.getElementById('ovProyectos');
+    const actSorted = activos.slice().sort((a,b)=>{
+      const ord = {'entregado-nc':0,'no-ent-cob':1,'en-curso':2};
+      return (ord[a.estadoProyecto||'en-curso']||2) - (ord[b.estadoProyecto||'en-curso']||2);
+    });
+    if(!actSorted.length){
+      proyEl.innerHTML = '<div class="ov-empty">Sin proyectos activos</div>';
+    } else {
+      proyEl.innerHTML = actSorted.map(c => {
+        const ep = c.estadoProyecto || 'en-curso';
+        const nombre = [c.agencia, c.empresa].filter(Boolean).join(' / ') || c.marca || 'Sin nombre';
+        const cot = c.quoteNum ? `Cot-${c.quoteNum}` : c.id.slice(0,6);
+        return `<div class="ov-proj-row">
+          <div class="ov-proj-accent ${ep}"></div>
+          <div class="ov-proj-inner">
+            <div class="ov-proj-name">${escHtml(nombre)}</div>
+            <div class="ov-proj-meta"><span class="ov-proj-cot">${cot}</span><span class="ov-proj-status ${ep}">${EP_LABEL[ep]||ep}</span></div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    // ---- PROVEEDORES PENDIENTES ----
+    const provEl = document.getElementById('ovProveedores');
+    const provEntries = Object.entries(provMap).sort((a,b)=>b[1]-a[1]);
+    if(!provEntries.some(([,v])=>v>0)){
+      provEl.innerHTML = '<div class="ov-empty">Sin pagos pendientes</div>';
+    } else {
+      provEl.innerHTML = provEntries.filter(([,v])=>v>0).map(([nombre, monto]) => {
+        const isMuted = nombre === 'Sin asignar';
+        return `<div class="ov-prov-row">
+          <div><div class="ov-prov-name">${escHtml(nombre)}</div></div>
+          <div class="ov-prov-amt${isMuted?' muted':''}">${fmtPesos(monto)}</div>
+        </div>`;
+      }).join('');
+    }
+  }
+
+  function fmtPesos(n){
+    if(!n) return '$0';
+    return '$' + Math.round(n).toLocaleString('es-AR');
+  }
+
+  let _ovLastBilling = null, _ovLastJobs = null, _ovLastMonth = -1;
+  function ovDrawChart(billing, jobsArr, currentMonth){
+    _ovLastBilling = billing; _ovLastJobs = jobsArr; _ovLastMonth = currentMonth;
+    const canvas = document.getElementById('ovYearChart');
+    if(!canvas) return;
+    const dpr = window.devicePixelRatio || 1;
+    const W = canvas.offsetWidth, H = canvas.offsetHeight;
+    if(!W || !H){ setTimeout(()=>ovDrawChart(billing,jobsArr,currentMonth), 100); return; }
+    canvas.width = W * dpr; canvas.height = H * dpr;
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+    const months = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+    const padL=28, padR=10, padT=10, padB=22;
+    const chartW = W-padL-padR, chartH = H-padT-padB;
+    const gap = chartW/12, barW = gap*0.45;
+    const maxB = Math.max(...billing)*1.15 || 1;
+    const maxJ = Math.max(...jobsArr)*1.2 || 1;
+    // detect dark mode
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark' ||
+                   window.matchMedia('(prefers-color-scheme: dark)').matches && !document.documentElement.hasAttribute('data-theme');
+    const gridColor = isDark ? '#2A2A28' : '#ECEAE4';
+    const labelColorDim = isDark ? '#444440' : '#C5C3BC';
+    const labelColorBold = isDark ? '#A0A09A' : '#6B6B65';
+    const barColorBase = isDark ? '110,231,183' : '10,107,87';
+    const dotColor = isDark ? '#A78BFA' : '#7C3AED';
+    const lineColor = isDark ? 'rgba(167,139,250,0.4)' : 'rgba(124,58,237,0.3)';
+    // grid
+    ctx.strokeStyle = gridColor; ctx.lineWidth = 0.5;
+    for(let i=0;i<=4;i++){const y=padT+chartH*(1-i/4);ctx.beginPath();ctx.moveTo(padL,y);ctx.lineTo(padL+chartW,y);ctx.stroke();}
+    // bars
+    billing.forEach((v,i)=>{
+      if(!v) return;
+      const x=padL+i*gap+gap/2-barW/2, bh=(v/maxB)*chartH, y=padT+chartH-bh;
+      let alpha = i===currentMonth?1:i>currentMonth?0.12:0.5;
+      ctx.fillStyle=`rgba(${barColorBase},${alpha})`;
+      const r=Math.min(3,barW/2);
+      ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+barW-r,y);ctx.quadraticCurveTo(x+barW,y,x+barW,y+r);ctx.lineTo(x+barW,padT+chartH);ctx.lineTo(x,padT+chartH);ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);ctx.closePath();ctx.fill();
+    });
+    // line
+    ctx.beginPath();
+    jobsArr.forEach((v,i)=>{
+      if(i>currentMonth)return;
+      const x=padL+i*gap+gap/2, y=padT+chartH-(v/maxJ)*chartH;
+      i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+    });
+    ctx.strokeStyle=lineColor;ctx.lineWidth=1.5;ctx.lineJoin='round';ctx.stroke();
+    // dots
+    jobsArr.forEach((v,i)=>{
+      if(i>currentMonth||!v)return;
+      const x=padL+i*gap+gap/2, y=padT+chartH-(v/maxJ)*chartH;
+      ctx.beginPath();ctx.arc(x,y,i===currentMonth?4:2.5,0,Math.PI*2);ctx.fillStyle=dotColor;ctx.fill();
+    });
+    // labels
+    ctx.textAlign='center';ctx.font=`500 9px 'Space Grotesk',sans-serif`;
+    months.forEach((m,i)=>{
+      const x=padL+i*gap+gap/2;
+      ctx.fillStyle=i===currentMonth?labelColorBold:labelColorDim;
+      ctx.fillText(m,x,H-5);
+    });
+    // tooltip on hover
+    if(!canvas._ovTooltipBound){
+      canvas._ovTooltipBound = true;
+      const tip = document.createElement('div');
+      tip.style.cssText='position:fixed;pointer-events:none;display:none;background:var(--card);border:1px solid var(--line);border-radius:7px;padding:5px 11px;font-family:\'Space Grotesk\',sans-serif;font-size:12px;font-weight:600;color:var(--ink);box-shadow:0 4px 12px rgba(0,0,0,.12);white-space:nowrap;z-index:999;';
+      document.body.appendChild(tip);
+      canvas.addEventListener('mousemove', e=>{
+        const rect=canvas.getBoundingClientRect();
+        const mx=e.clientX-rect.left, my=e.clientY-rect.top;
+        const W2=canvas.offsetWidth,H2=canvas.offsetHeight;
+        const cW=W2-padL-padR,cH=H2-padT-padB,g=cW/12,bW2=g*0.45;
+        const maxB2=Math.max(...(_ovLastBilling||[1]))*1.15||1;
+        const maxJ2=Math.max(...(_ovLastJobs||[1]))*1.2||1;
+        let found=false;
+        // dots first
+        (_ovLastJobs||[]).forEach((v,i)=>{
+          if(i>_ovLastMonth||!v)return;
+          const x=padL+i*g+g/2,y=padT+cH-(v/maxJ2)*cH;
+          if(Math.sqrt((mx-x)**2+(my-y)**2)<12){
+            tip.style.display='block';
+            tip.innerHTML=`<span style="color:#7C3AED">●</span> ${v} proyecto${v!==1?'s':''} · ${['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'][i]}`;
+            canvas.style.cursor='pointer';found=true;
+          }
+        });
+        if(!found){
+          (_ovLastBilling||[]).forEach((v,i)=>{
+            if(!v)return;
+            const x=padL+i*g+g/2-bW2/2,bh=(v/maxB2)*cH,y=padT+cH-bh;
+            if(mx>=x&&mx<=x+bW2&&my>=y&&my<=padT+cH){
+              tip.style.display='block';
+              tip.innerHTML=`<span style="color:var(--good)">▮</span> ${fmtPesos(v)} · ${['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'][i]}`;
+              canvas.style.cursor='pointer';found=true;
+            }
+          });
+        }
+        if(!found){tip.style.display='none';canvas.style.cursor='default';}
+        tip.style.left=(e.clientX+12)+'px';tip.style.top=(e.clientY-16)+'px';
+      });
+      canvas.addEventListener('mouseleave',()=>{tip.style.display='none';canvas.style.cursor='default';});
+    }
+  }
+
+  window.addEventListener('resize',()=>{ if(_ovLastBilling) ovDrawChart(_ovLastBilling,_ovLastJobs,_ovLastMonth); });
 
   function totalGastosC(c){
     return (c.gastosReales||[]).reduce((s,g) => s + (g.items||[]).reduce((a,i)=>a+(i.monto||0),0), 0);

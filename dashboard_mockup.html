@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VACH* — Overview</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#F5F4F0;color:#1A1A18;font-family:'Space Grotesk',sans-serif;min-height:100vh;}
+.dash{padding:22px;max-width:920px;margin:0 auto;}
+
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;}
+.logo{font-size:17px;font-weight:800;letter-spacing:-.03em;}
+.logo .ast{color:#0A6B57;font-weight:400;}
+.logo .sub{font-size:11px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:#9B9B93;margin-left:10px;}
+.date-chip{font-size:11px;color:#9B9B93;background:#ECEAE4;border:0.5px solid #DDDBD4;border-radius:6px;padding:4px 10px;}
+
+.chart-card{background:#FFFFFF;border:0.5px solid #E0DED8;border-radius:14px;padding:18px 20px;margin-bottom:18px;}
+.chart-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.chart-title{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:#9B9B93;}
+.chart-legend{display:flex;gap:16px;}
+.leg{display:flex;align-items:center;gap:5px;font-size:11px;color:#9B9B93;}
+.leg-dot{width:8px;height:8px;border-radius:50%;}
+.chart-wrap{position:relative;height:130px;}
+canvas#yearChart{width:100%;height:100%;display:block;}
+
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px;}
+.stat{background:#FFFFFF;border:0.5px solid #E0DED8;border-radius:12px;padding:14px 15px;}
+.stat-label{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#9B9B93;margin-bottom:8px;font-weight:600;}
+.stat-val{font-size:21px;font-weight:800;line-height:1;letter-spacing:-.02em;}
+.stat-val.red{color:#C0392B;}
+.stat-val.green{color:#0A6B57;}
+.stat-val.white{color:#1A1A18;}
+.stat-sub{font-size:10.5px;color:#9B9B93;margin-top:5px;}
+.stat-names-line{font-size:10.5px;color:#9B9B93;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.chips{margin-top:7px;display:flex;flex-wrap:wrap;gap:3px;}
+.chip{font-size:10px;padding:2px 7px;border-radius:4px;background:#F0EEE8;border:0.5px solid #E0DED8;color:#6B6B65;}
+
+.section-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.12em;color:#9B9B93;margin-bottom:10px;}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;}
+.card{background:#FFFFFF;border:0.5px solid #E0DED8;border-radius:12px;overflow:hidden;}
+
+/* Vencimientos */
+.ev-row{display:flex;align-items:center;gap:0;border-bottom:0.5px solid #ECEAE4;}
+.ev-row:last-child{border-bottom:none;}
+.ev-accent{width:3px;flex-shrink:0;align-self:stretch;}
+.ev-accent.p{background:#6D28D9;}
+.ev-accent.e{background:#C0392B;}
+.ev-accent.hoy{background:#C0392B;}
+.ev-inner{display:flex;align-items:center;gap:12px;padding:11px 14px;flex:1;min-width:0;}
+.ev-date-block{text-align:center;min-width:30px;flex-shrink:0;}
+.ev-mon{font-size:9px;color:#9B9B93;text-transform:uppercase;font-weight:600;line-height:1;}
+.ev-day{font-size:18px;font-weight:800;line-height:1.1;letter-spacing:-.02em;color:#1A1A18;}
+.ev-day.hoy{color:#C0392B;}
+.ev-sep{width:0.5px;height:28px;background:#ECEAE4;flex-shrink:0;}
+.ev-info{flex:1;min-width:0;}
+.ev-title{font-size:13px;font-weight:700;color:#1A1A18;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ev-sub{font-size:10.5px;color:#9B9B93;margin-top:2px;}
+.ev-type{font-size:10px;font-weight:700;flex-shrink:0;}
+.ev-type.p{color:#6D28D9;}
+.ev-type.e{color:#C0392B;}
+
+/* Proyectos */
+.proj-row{display:flex;align-items:center;gap:0;border-bottom:0.5px solid #ECEAE4;}
+.proj-row:last-child{border-bottom:none;}
+.proj-accent{width:3px;flex-shrink:0;align-self:stretch;}
+.proj-accent.ec{background:#D97706;}
+.proj-accent.enc{background:#EA580C;}
+.proj-accent.nc{background:#7C3AED;}
+.proj-accent.comp{background:#059669;}
+.proj-inner{display:flex;flex-direction:column;padding:11px 14px;flex:1;min-width:0;}
+.proj-name{font-size:13px;font-weight:700;color:#1A1A18;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.proj-meta{display:flex;align-items:center;justify-content:space-between;margin-top:3px;}
+.proj-cot{font-size:10.5px;color:#9B9B93;}
+.proj-status{font-size:10px;font-weight:700;}
+.proj-status.ec{color:#D97706;}
+.proj-status.enc{color:#EA580C;}
+.proj-status.nc{color:#7C3AED;}
+.proj-status.comp{color:#059669;}
+
+/* Proveedores */
+.prov-row{display:flex;align-items:center;gap:0;border-bottom:0.5px solid #ECEAE4;}
+.prov-row:last-child{border-bottom:none;}
+.prov-inner{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;flex:1;}
+.prov-left{}
+.prov-name{font-size:13px;font-weight:700;color:#1A1A18;}
+.prov-items{font-size:10.5px;color:#9B9B93;margin-top:2px;}
+.prov-amt{font-size:16px;font-weight:800;color:#C0392B;letter-spacing:-.02em;}
+.prov-amt.muted{color:#C5C3BC;font-size:14px;}
+</style>
+</head>
+<body>
+<div class="dash">
+  <div class="topbar">
+    <div class="logo">VACH<span class="ast">*</span><span class="sub">Overview</span></div>
+    <div class="date-chip">Jue 19 nov 2026</div>
+  </div>
+
+  <div class="chart-card">
+    <div class="chart-header">
+      <div style="display:flex;align-items:baseline;gap:20px;">
+        <div class="chart-title">Facturación 2026</div>
+        <div style="display:flex;gap:16px;">
+          <div style="font-size:13px;font-weight:700;color:#0A6B57;">$8.190.023 <span style="font-size:10px;font-weight:500;color:#9B9B93;margin-left:2px;">total año</span></div>
+          <div style="font-size:13px;font-weight:700;color:#6D28D9;">49 <span style="font-size:10px;font-weight:500;color:#9B9B93;margin-left:2px;">proyectos</span></div>
+        </div>
+      </div>
+      <div class="chart-legend">
+        <div class="leg"><div class="leg-dot" style="background:#6EE7B7"></div>Facturado ($)</div>
+        <div class="leg"><div class="leg-dot" style="background:#A78BFA"></div>Nro. proyectos</div>
+      </div>
+    </div>
+    <div class="chart-wrap">
+      <canvas id="yearChart"></canvas>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat">
+      <div class="stat-label">Pendiente cobro</div>
+      <div class="stat-val red">$847.000</div>
+      <div class="stat-names-line">Catch/Dani · BienBA · Monsta</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Pago proveedores</div>
+      <div class="stat-val red">$312.000</div>
+      <div class="stat-names-line">Franco · Stranger · Laura</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Proyectos activos</div>
+      <div class="stat-val white">3</div>
+      <div class="stat-sub">de 12 totales</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Facturado</div>
+      <div class="stat-val green">$1.240.000</div>
+      <div class="stat-sub">nov 2026</div>
+    </div>
+  </div>
+
+  <div class="three-col">
+
+    <!-- VENCIMIENTOS -->
+    <div>
+      <div class="section-label">Próximos vencimientos · 10 días</div>
+      <div class="card">
+        <div class="ev-row">
+          <div class="ev-accent hoy"></div>
+          <div class="ev-inner">
+            <div class="ev-date-block"><div class="ev-mon">hoy</div><div class="ev-day hoy">19</div></div>
+            <div class="ev-sep"></div>
+            <div class="ev-info"><div class="ev-title">Catch / Axe</div><div class="ev-sub">Cot-032 · <strong style="color:#1A1A18;">$420.000</strong></div></div>
+            <div class="ev-type p">Pago</div>
+          </div>
+        </div>
+        <div class="ev-row">
+          <div class="ev-accent e"></div>
+          <div class="ev-inner">
+            <div class="ev-date-block"><div class="ev-mon">nov</div><div class="ev-day">20</div></div>
+            <div class="ev-sep"></div>
+            <div class="ev-info"><div class="ev-title">Catch / Axe</div><div class="ev-sub">Cot-032</div></div>
+            <div class="ev-type e">Entrega</div>
+          </div>
+        </div>
+        <div class="ev-row">
+          <div class="ev-accent p"></div>
+          <div class="ev-inner">
+            <div class="ev-date-block"><div class="ev-mon">nov</div><div class="ev-day">22</div></div>
+            <div class="ev-sep"></div>
+            <div class="ev-info"><div class="ev-title">BienBA / Comfort</div><div class="ev-sub">Cot-002 · <strong style="color:#1A1A18;">$280.000</strong></div></div>
+            <div class="ev-type p">Pago</div>
+          </div>
+        </div>
+        <div class="ev-row">
+          <div class="ev-accent e"></div>
+          <div class="ev-inner">
+            <div class="ev-date-block"><div class="ev-mon">nov</div><div class="ev-day">25</div></div>
+            <div class="ev-sep"></div>
+            <div class="ev-info"><div class="ev-title">Monsta / Adium</div><div class="ev-sub">Cot-044</div></div>
+            <div class="ev-type e">Entrega</div>
+          </div>
+        </div>
+        <div class="ev-row">
+          <div class="ev-accent p"></div>
+          <div class="ev-inner">
+            <div class="ev-date-block"><div class="ev-mon">nov</div><div class="ev-day">28</div></div>
+            <div class="ev-sep"></div>
+            <div class="ev-info"><div class="ev-title">Sunshine / Maybelline</div><div class="ev-sub">Cot-021 · <strong style="color:#1A1A18;">$147.000</strong></div></div>
+            <div class="ev-type p">Pago</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROYECTOS -->
+    <div>
+      <div class="section-label">Proyectos en curso</div>
+      <div class="card">
+        <div class="proj-row">
+          <div class="proj-accent enc"></div>
+          <div class="proj-inner">
+            <div class="proj-name">Catch / Axe</div>
+            <div class="proj-meta"><span class="proj-cot">Cot-032</span><span class="proj-status enc">Entregado / NC</span></div>
+          </div>
+        </div>
+        <div class="proj-row">
+          <div class="proj-accent ec"></div>
+          <div class="proj-inner">
+            <div class="proj-name">BienBA / Comfort</div>
+            <div class="proj-meta"><span class="proj-cot">Cot-002</span><span class="proj-status ec">En curso</span></div>
+          </div>
+        </div>
+        <div class="proj-row">
+          <div class="proj-accent ec"></div>
+          <div class="proj-inner">
+            <div class="proj-name">Monsta / Adium</div>
+            <div class="proj-meta"><span class="proj-cot">Cot-044</span><span class="proj-status ec">En curso</span></div>
+          </div>
+        </div>
+        <div class="proj-row">
+          <div class="proj-accent nc"></div>
+          <div class="proj-inner">
+            <div class="proj-name">Sunshine / Maybelline</div>
+            <div class="proj-meta"><span class="proj-cot">Cot-021</span><span class="proj-status nc">No ent. cobrado</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROVEEDORES -->
+    <div>
+      <div class="section-label">Proveedores pendientes</div>
+      <div class="card">
+        <div class="prov-row">
+          <div class="prov-inner">
+            <div class="prov-left"><div class="prov-name">Franco</div><div class="prov-items">11 ítems</div></div>
+            <div class="prov-amt">$185.000</div>
+          </div>
+        </div>
+        <div class="prov-row">
+          <div class="prov-inner">
+            <div class="prov-left"><div class="prov-name">Stranger</div><div class="prov-items">2 ítems</div></div>
+            <div class="prov-amt">$78.000</div>
+          </div>
+        </div>
+        <div class="prov-row">
+          <div class="prov-inner">
+            <div class="prov-left"><div class="prov-name">Laura</div><div class="prov-items">3 ítems</div></div>
+            <div class="prov-amt">$49.000</div>
+          </div>
+        </div>
+        <div class="prov-row">
+          <div class="prov-inner">
+            <div class="prov-left"><div class="prov-name">Sin asignar</div><div class="prov-items">1 ítem</div></div>
+            <div class="prov-amt muted">$12.000</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const months = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+const billing = [420, 650, 380, 820, 540, 710, 490, 960, 1100, 780, 1240, 0];
+const jobs    = [2, 4, 2, 5, 3, 4, 3, 6, 7, 5, 8, 0];
+const currentMonth = 10;
+
+const canvas = document.getElementById('yearChart');
+const dpr = window.devicePixelRatio || 1;
+
+// Tooltip
+const tooltip = document.createElement('div');
+tooltip.style.cssText = `
+  position:fixed;pointer-events:none;display:none;
+  background:#FFFFFF;border:0.5px solid #E0DED8;border-radius:7px;
+  padding:6px 11px;font-family:'Space Grotesk',sans-serif;
+  font-size:12px;font-weight:600;color:#1A1A18;
+  box-shadow:0 4px 16px rgba(0,0,0,.5);white-space:nowrap;z-index:999;
+`;
+document.body.appendChild(tooltip);
+
+let hoveredBar = -1;
+let hoveredDot = -1;
+
+function getLayout() {
+  const W = canvas.offsetWidth, H = canvas.offsetHeight;
+  const padL=28, padR=10, padT=10, padB=22;
+  const chartW = W - padL - padR;
+  const chartH = H - padT - padB;
+  const gap = chartW / 12;
+  const barW = gap * 0.45;
+  const maxB = Math.max(...billing) * 1.15 || 1;
+  const maxJ = Math.max(...jobs) * 1.2 || 1;
+  return { W, H, padL, padR, padT, padB, chartW, chartH, gap, barW, maxB, maxJ };
+}
+
+function draw(highlightBar=-1, highlightDot=-1) {
+  const { W, H, padL, padT, padB, chartW, chartH, gap, barW, maxB, maxJ } = getLayout();
+  if (!W || !H) return;
+  canvas.width = W * dpr; canvas.height = H * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  // Grid lines
+  ctx.strokeStyle = '#ECEAE4';
+  ctx.lineWidth = 0.5;
+  for (let i = 0; i <= 4; i++) {
+    const y = padT + chartH * (1 - i / 4);
+    ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(padL + chartW, y); ctx.stroke();
+  }
+
+  // Bars
+  billing.forEach((v, i) => {
+    if (!v) return;
+    const x = padL + i * gap + gap / 2 - barW / 2;
+    const bh = (v / maxB) * chartH;
+    const y = padT + chartH - bh;
+    let alpha = i === currentMonth ? 1 : i > currentMonth ? 0.12 : 0.5;
+    if (highlightBar === i) alpha = 1;
+    ctx.fillStyle = i === currentMonth ? `rgba(10,107,87,${alpha})` : `rgba(10,107,87,${alpha})`;
+    const r = Math.min(3, barW / 2);
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + barW - r, y);
+    ctx.quadraticCurveTo(x + barW, y, x + barW, y + r);
+    ctx.lineTo(x + barW, padT + chartH);
+    ctx.lineTo(x, padT + chartH);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+    ctx.fill();
+  });
+
+  // Line
+  ctx.beginPath();
+  jobs.forEach((v, i) => {
+    if (i > currentMonth) return;
+    const x = padL + i * gap + gap / 2;
+    const y = padT + chartH - (v / maxJ) * chartH;
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  });
+  ctx.strokeStyle = 'rgba(109,40,217,0.3)';
+  ctx.lineWidth = 1.5;
+  ctx.lineJoin = 'round';
+  ctx.stroke();
+
+  // Dots
+  jobs.forEach((v, i) => {
+    if (i > currentMonth || !v) return;
+    const x = padL + i * gap + gap / 2;
+    const y = padT + chartH - (v / maxJ) * chartH;
+    const isHighlight = highlightDot === i;
+    const isCurrent = i === currentMonth;
+    ctx.beginPath();
+    ctx.arc(x, y, isHighlight ? 6 : (isCurrent ? 4 : 2.5), 0, Math.PI * 2);
+    ctx.fillStyle = (isHighlight || isCurrent) ? '#6D28D9' : 'rgba(109,40,217,0.6)';
+    ctx.fill();
+    if (isHighlight) {
+      ctx.beginPath();
+      ctx.arc(x, y, 9, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(109,40,217,0.15)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
+  });
+
+  // Month labels
+  ctx.textAlign = 'center';
+  ctx.font = `500 9px 'Space Grotesk', sans-serif`;
+  months.forEach((m, i) => {
+    const x = padL + i * gap + gap / 2;
+    ctx.fillStyle = i === currentMonth ? '#6B6B65' : '#C5C3BC';
+    ctx.fillText(m, x, H - 5);
+  });
+}
+
+canvas.addEventListener('mousemove', (e) => {
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+  const { H, padL, padT, padB, chartH, gap, barW, maxB, maxJ } = getLayout();
+
+  let newBar = -1, newDot = -1;
+
+  // Check dots first (higher priority, smaller target)
+  jobs.forEach((v, i) => {
+    if (i > currentMonth || !v) return;
+    const x = padL + i * gap + gap / 2;
+    const y = padT + chartH - (v / maxJ) * chartH;
+    const dist = Math.sqrt((mx - x)**2 + (my - y)**2);
+    if (dist < 12) newDot = i;
+  });
+
+  // Check bars
+  if (newDot === -1) {
+    billing.forEach((v, i) => {
+      if (!v) return;
+      const x = padL + i * gap + gap / 2 - barW / 2;
+      const bh = (v / maxB) * chartH;
+      const y = padT + chartH - bh;
+      if (mx >= x && mx <= x + barW && my >= y && my <= padT + chartH) newBar = i;
+    });
+  }
+
+  if (newBar !== hoveredBar || newDot !== hoveredDot) {
+    hoveredBar = newBar; hoveredDot = newDot;
+    draw(hoveredBar, hoveredDot);
+  }
+
+  if (newDot !== -1) {
+    tooltip.style.display = 'block';
+    tooltip.innerHTML = `<span style="color:#6D28D9">●</span> ${jobs[newDot]} proyecto${jobs[newDot]!==1?'s':''} · ${months[newDot]}`;
+    canvas.style.cursor = 'pointer';
+  } else if (newBar !== -1) {
+    tooltip.style.display = 'block';
+    const val = billing[newBar];
+    const formatted = val >= 1000 ? `$${(val/1000).toFixed(val%1000===0?0:1)}M` : `$${val}k`;
+    tooltip.innerHTML = `<span style="color:#0A6B57">▮</span> ${formatted} facturado · ${months[newBar]}`;
+    canvas.style.cursor = 'pointer';
+  } else {
+    tooltip.style.display = 'none';
+    canvas.style.cursor = 'default';
+  }
+
+  tooltip.style.left = (e.clientX + 12) + 'px';
+  tooltip.style.top  = (e.clientY - 16) + 'px';
+});
+
+canvas.addEventListener('mouseleave', () => {
+  hoveredBar = -1; hoveredDot = -1;
+  tooltip.style.display = 'none';
+  canvas.style.cursor = 'default';
+  draw(-1, -1);
+});
+
+requestAnimationFrame(() => draw(-1, -1));
+window.addEventListener('resize', () => draw(hoveredBar, hoveredDot));
+</script>
+</body>
+</html>
