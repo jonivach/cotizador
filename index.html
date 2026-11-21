@@ -194,6 +194,8 @@
   .cont-card.open .cont-chevron{transform:rotate(90deg);}
   .cont-card-head{cursor:pointer;}
   .cont-result{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;padding-top:8px;border-top:1px solid var(--line);}
+  .cont-sync-btn{background:none;border:1px solid var(--line);border-radius:6px;padding:3px 10px;font-size:11px;color:var(--ink-soft);cursor:pointer;margin-top:8px;transition:all .15s;}
+  .cont-sync-btn:hover{border-color:var(--cyan);color:var(--cyan);}
   .cont-result-item{flex:1;min-width:80px;}
   .cont-result-item .lbl{font-size:9.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-soft);font-weight:600;}
   .cont-result-item .val{font-size:14px;font-weight:700;margin-top:1px;color:var(--ink);}
@@ -3308,6 +3310,7 @@
             <div class="cont-result-item"><div class="lbl">Resultado</div><div class="val ${resBueno?'good':'bad'}">${fmtMoney(resultado)}</div></div>
             <div class="cont-result-item"><div class="lbl">Margen</div><div class="val ${resBueno?'good':'bad'}">${facturado > 0 ? margenP + '%' : '—'}</div></div>
           </div>
+          <button class="cont-sync-btn" data-action="sync-gastos" data-cid="${c.id}">↺ Sincronizar con cotización</button>
         </div>
       </div>`;
     }).join('');
@@ -3453,6 +3456,33 @@
         cotizaciones[cidx].gastosReales = grupos;
         saveCotizaciones(cotizaciones);
         renderContable();
+        return;
+      }
+
+      if(btn.dataset.action === 'sync-gastos'){
+        const c = cotizaciones[cidx];
+        const prods = c.productosAprobados || c.productos || [];
+        const nuevosGastos = prods.map(p => ({
+          productoNombre: p.nombre || 'Producto',
+          items: (p.insumos||[])
+            .filter(i => (i.costoUnit||0) > 0 && (i.nombre||'').trim())
+            .map(i => ({ id: uid(), nombre: i.nombre, monto: Math.round((i.costoUnit||0) * (i.cantidad||1)) }))
+        }));
+        cotizaciones[cidx].gastosReales = nuevosGastos;
+        saveCotizaciones(cotizaciones);
+        // Sincronizar compras también
+        nuevosGastos.forEach((grupo, pi) => {
+          const comprasDeProd = compras
+            .map((x, i) => ({ ...x, _idx: i }))
+            .filter(x => x.cotizacionId === c.id && x.productoNombre === grupo.productoNombre);
+          grupo.items.forEach((item, gi) => {
+            if(comprasDeProd[gi]){ compras[comprasDeProd[gi]._idx].total = item.monto; }
+          });
+        });
+        saveCompras();
+        renderContable();
+        try{ renderProveedores(); }catch(e){}
+        showToast('↺ Gastos sincronizados con la cotización');
         return;
       }
 
