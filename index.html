@@ -527,9 +527,29 @@
     .producto-cu-wrap{order:6;}
 
     /* Cards de cotizaciones */
-    .cotz-card-row1{min-width:0;flex-wrap:wrap;}
+    .cotz-header{display:none;}
+    .cotz-card-row1{min-width:0;flex-wrap:wrap;gap:4px;}
     .cotz-col-empresa,.cotz-col-contacto{display:none;}
+    .cotz-col-num{min-width:0;flex:1;}
+    .cotz-col-fecha{width:auto;}
+    .cotz-col-agencia{width:auto;flex:1;}
+    .cotz-col-total{width:auto;text-align:left;}
+    .cotz-col-gan{width:auto;text-align:left;}
+    .cotz-col-actions{width:100%;margin-left:0;}
     .cotz-col-actions .mini-btn{font-size:10px !important;padding:3px 7px !important;letter-spacing:.01em !important;}
+
+    /* Overview móvil */
+    #tab-overview{padding:14px 12px 40px;}
+    .ov-chart-card{padding:14px 12px;}
+    .ov-chart-header{flex-direction:column;align-items:flex-start;gap:6px;}
+    .ov-chart-totals{flex-wrap:wrap;gap:10px;}
+    .ov-venc-list .ov-venc-row{flex-wrap:wrap;gap:4px;}
+
+    /* Proveedores móvil */
+    .proj-row{grid-template-columns:1fr auto auto;padding:8px 12px;}
+    .edit-monto-btn{opacity:0.5;}
+    .prov-card-top{padding:10px 12px;}
+    .prov-card-footer{padding:8px 12px;}
 
     /* Cards de aprobados */
     .apro-card-row1{flex-wrap:wrap;overflow-x:visible;}
