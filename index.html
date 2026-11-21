@@ -3362,6 +3362,20 @@
         grupos[pidx].items = items;
         cotizaciones[cidx].gastosReales = grupos;
         saveCotizaciones(cotizaciones);
+        // Sincronizar compras cuando cambia nombre o monto
+        const productoNombreGasto = (grupos[pidx] || {}).productoNombre || '';
+        // Compras de esta cotización+producto, en orden de inserción
+        const comprasDeProd = compras
+          .map((x, i) => ({ ...x, _idx: i }))
+          .filter(x => x.cotizacionId === cid && x.productoNombre === productoNombreGasto);
+        const compraMatch = comprasDeProd[gidx]; // posición = índice del gasto
+        if(compraMatch){
+          const ci = compraMatch._idx;
+          if(inp.classList.contains('gasto-monto'))  compras[ci].total       = items[gidx].monto;
+          if(inp.classList.contains('gasto-nombre')) compras[ci].insumoNombre = items[gidx].nombre;
+          saveCompras();
+          try{ renderProveedores(); }catch(e){}
+        }
         // Actualizar card sin re-renderizar todo (para no cerrar la card abierta)
         const c = cotizaciones[cidx];
         const facturado = c.totalAprobado ?? c.total ?? 0;
