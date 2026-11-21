@@ -559,10 +559,15 @@
     /* Cards de aprobados */
     .apro-card-row1{flex-wrap:wrap;overflow-x:visible;}
     .apro-card-row2{flex-direction:column !important;overflow-x:visible;gap:6px !important;padding:8px 12px 10px !important;}
-    .apro-row2-section{display:flex;flex-wrap:wrap;align-items:center;gap:4px;}
-    .apro-row2-section-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft);flex-shrink:0;min-width:60px;}
-    .apro-pago-block{display:flex;flex-direction:column;gap:3px;border-left:2px solid var(--line);padding-left:8px;}
-    .apro-pago-block-row{display:flex;flex-wrap:wrap;align-items:center;gap:4px;}
+    .apro-row2-section{display:flex;flex-direction:column;align-items:flex-start;gap:6px;}
+    .apro-row2-section-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft);flex-shrink:0;}
+    /* Fila de entregas: label + inputs en una línea */
+    .apro-row2-section:first-child{flex-direction:row;flex-wrap:wrap;align-items:center;gap:4px;}
+    /* Cada pago en una sola línea: PAGO N | FECHA | % | MONTO [x] */
+    .apro-pago-block{flex-direction:row !important;align-items:center !important;gap:5px !important;width:100%;border-left:2px solid var(--line);padding-left:8px;}
+    .apro-pago-block-row{display:contents;}
+    .apro-pago-block input[type="date"]{width:128px !important;min-width:0 !important;flex-shrink:0;}
+    .apro-pago-block input[type="number"]{width:44px !important;min-width:0 !important;flex-shrink:0;}
     .cal-dates-row td{padding:4px 8px 10px !important;}
 
     /* Filtros estado */
