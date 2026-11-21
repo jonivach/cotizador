@@ -114,6 +114,7 @@
 
   .ov-stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px;}
   @media(max-width:900px){.ov-stats-row{grid-template-columns:repeat(2,1fr);}}
+  @media(max-width:640px){.ov-stats-row{grid-template-columns:1fr;}}
   .ov-stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;}
   .ov-stat-label{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-soft);margin-bottom:8px;font-weight:600;}
   .ov-stat-val{font-size:22px;font-weight:800;line-height:1;letter-spacing:-.02em;color:var(--ink);}
@@ -528,14 +529,18 @@
 
     /* Cards de cotizaciones */
     .cotz-header{display:none;}
-    .cotz-card-row1{min-width:0;flex-wrap:wrap;gap:4px;}
+    .cotz-card-row1{min-width:0;flex-wrap:wrap;gap:3px 8px;padding:8px 10px;}
     .cotz-col-empresa,.cotz-col-contacto{display:none;}
-    .cotz-col-num{min-width:0;flex:1;}
-    .cotz-col-fecha{width:auto;}
-    .cotz-col-agencia{width:auto;flex:1;}
-    .cotz-col-total{width:auto;text-align:left;}
-    .cotz-col-gan{width:auto;text-align:left;}
-    .cotz-col-actions{width:100%;margin-left:0;}
+    /* Línea 1: N° (flex) + fecha */
+    .cotz-col-num{order:1;flex:1;min-width:0;}
+    .cotz-col-fecha{order:2;flex-shrink:0;font-size:11px;color:var(--ink-soft);width:auto;}
+    /* Línea 2: agencia (100% = salto de línea) */
+    .cotz-col-agencia{order:3;width:100%;font-weight:600;overflow:hidden;text-overflow:ellipsis;}
+    /* Línea 3: total + ganancia */
+    .cotz-col-total{order:4;width:auto;text-align:left;font-weight:700;}
+    .cotz-col-gan{order:5;width:auto;text-align:left;}
+    /* Línea 4: botones (100% = salto de línea) */
+    .cotz-col-actions{order:6;width:100%;margin-left:0;margin-top:4px;}
     .cotz-col-actions .mini-btn{font-size:10px !important;padding:3px 7px !important;letter-spacing:.01em !important;}
 
     /* Overview móvil */
@@ -1249,6 +1254,15 @@
 (function(){
   const $ = id => document.getElementById(id);
   const fmt = new Intl.NumberFormat('es-AR', {maximumFractionDigits:2});
+
+  // Fija el tabbar justo debajo del topbar (necesario en móvil donde el topbar es más alto)
+  function fixTabbarTop(){
+    const tb = document.querySelector('.topbar');
+    const bar = document.querySelector('.tabbar');
+    if(tb && bar) bar.style.top = tb.offsetHeight + 'px';
+  }
+  fixTabbarTop();
+  window.addEventListener('resize', fixTabbarTop);
   const fmtMoney = n => '$ ' + fmt.format(n || 0);
   function num(id){ return parseFloat($(id) && $(id).value) || 0; }
 
