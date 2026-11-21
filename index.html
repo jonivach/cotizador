@@ -696,7 +696,7 @@
   .prov-card.open .prov-chevron{transform:rotate(180deg);}
   .prov-card-body{display:none;border-top:1px solid var(--line);}
   .prov-card.open .prov-card-body{display:block;}
-  .proj-row{display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:8px;padding:10px 18px;border-bottom:1px solid var(--line);position:relative;}
+  .proj-row{display:grid;grid-template-columns:1fr auto auto auto;align-items:center;gap:8px;padding:10px 18px;border-bottom:1px solid var(--line);position:relative;}
   .proj-row:last-of-type:not(:has(+ .inline-edit-wrap.active)){border-bottom:none;}
   .proj-row:hover{background:var(--card,#FAFAFA);}
   .proj-name{font-size:12px;font-weight:600;}
@@ -4604,9 +4604,15 @@
 
     if(action === 'edit-monto'){
       const row = btn.closest('.proj-row');
-      // .monto-inline-wrap is 2 siblings after .proj-row (after .inline-edit-wrap)
-      const wrap = row.nextElementSibling && row.nextElementSibling.nextElementSibling;
-      if(!wrap || !wrap.classList.contains('monto-inline-wrap')) return;
+      // Find .monto-inline-wrap: search forward among parent's children after this row
+      let wrap = null;
+      const siblings = row.parentElement ? Array.from(row.parentElement.children) : [];
+      const rowIdx = siblings.indexOf(row);
+      for(let i = rowIdx + 1; i < siblings.length; i++){
+        if(siblings[i].classList.contains('monto-inline-wrap')){ wrap = siblings[i]; break; }
+        if(siblings[i].classList.contains('proj-row')) break;
+      }
+      if(!wrap) return;
       const ids = (row.dataset.compraIds||'').split(',').filter(Boolean);
       const items = ids.map(id => compras.find(x=>x.id===id)).filter(Boolean);
       const currentTotal = items.reduce((s,c)=>s+(c.total||0),0);
@@ -4620,9 +4626,14 @@
       const wrap = btn.closest('.monto-inline-wrap');
       const inp = wrap.querySelector('.monto-inline-input');
       const newTotal = parseFloat(inp.value) || 0;
-      // .proj-row is 2 siblings before .monto-inline-wrap (before .inline-edit-wrap)
-      const row = wrap.previousElementSibling && wrap.previousElementSibling.previousElementSibling;
-      if(!row || !row.classList.contains('proj-row')) return;
+      // Find .proj-row: search backwards among parent's children before this wrap
+      let row = null;
+      const siblings = wrap.parentElement ? Array.from(wrap.parentElement.children) : [];
+      const wrapIdx = siblings.indexOf(wrap);
+      for(let i = wrapIdx - 1; i >= 0; i--){
+        if(siblings[i].classList.contains('proj-row')){ row = siblings[i]; break; }
+      }
+      if(!row) return;
       const ids = (row.dataset.compraIds||'').split(',').filter(Boolean);
       const compraItems = ids.map(id => ({ idx: compras.findIndex(x=>x.id===id), obj: compras.find(x=>x.id===id) })).filter(x=>x.obj);
       const oldTotal = compraItems.reduce((s,x)=>s+(x.obj.total||0),0);
