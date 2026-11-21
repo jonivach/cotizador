@@ -709,6 +709,13 @@
   .edit-prov-btn{opacity:0;background:none;border:none;cursor:pointer;color:var(--ink-soft);font-size:12px;padding:2px 6px;border-radius:5px;transition:.15s;line-height:1;}
   .proj-row:hover .edit-prov-btn{opacity:1;}
   .edit-prov-btn:hover{background:var(--line);color:var(--ink);}
+  .edit-monto-btn{opacity:0;background:none;border:none;cursor:pointer;color:var(--ink-soft);font-size:11px;padding:2px 5px;border-radius:4px;transition:.15s;line-height:1;}
+  .proj-row:hover .edit-monto-btn{opacity:0.6;}
+  .edit-monto-btn:hover{opacity:1!important;color:var(--ink);}
+  .monto-inline-wrap{display:flex;align-items:center;gap:6px;padding:8px 18px;background:var(--paper);border-bottom:1px solid var(--line);}
+  .monto-inline-input{border:1px solid var(--cyan);border-radius:7px;padding:5px 10px;font-size:13px;font-weight:700;font-family:inherit;width:140px;color:var(--ink);background:var(--bg);}
+  .monto-inline-save{background:var(--cyan);color:#fff;border:none;border-radius:7px;padding:5px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;}
+  .monto-inline-cancel{background:none;border:none;color:var(--ink-soft);font-size:12px;cursor:pointer;padding:4px 8px;}
   .inline-edit-wrap{display:none;}
   .inline-edit-wrap.active{display:block;padding:10px 18px 12px;background:var(--cyan-bg,#E6F7F2);border-top:1px solid #BEE8DC;border-bottom:1px solid #BEE8DC;}
   .picker-label{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft);font-weight:600;display:block;margin-bottom:8px;}
@@ -4449,12 +4456,15 @@
         const ids = g.items.map(c=>c.id).join(',');
         const btnClass = gAllPaid ? 'paid' : 'pend';
         const btnText = (gAllPaid?'✓ ':'') + '$ ' + fmt.format(Math.round(gTotal));
-        return `<div class="proj-row" data-cot-id="${escHtml(g.cotizacionId)}" data-proj="${escHtml(g.cliente)}">
+        const canEditMonto = !gAllPaid; // solo pendientes
+        return `<div class="proj-row" data-cot-id="${escHtml(g.cotizacionId)}" data-proj="${escHtml(g.cliente)}" data-compra-ids="${ids}">
           <div><div class="proj-name">${escHtml(g.cliente)}</div><div class="proj-num">${escHtml(g.num)}</div></div>
           <button class="prov-cell-btn ${btnClass}" data-compra-ids="${ids}" onclick="toggleProvCell(this)">${btnText}</button>
-          <button class="edit-prov-btn" onclick="openEditProv(this)" title="Cambiar proveedor">✎</button>
+          ${canEditMonto ? `<button class="edit-monto-btn" data-action="edit-monto" title="Editar monto">✎</button>` : '<span style="width:24px;display:inline-block;"></span>'}
+          <button class="edit-prov-btn" onclick="openEditProv(this)" title="Cambiar proveedor">⋯</button>
         </div>
-        <div class="inline-edit-wrap"></div>`;
+        <div class="inline-edit-wrap"></div>
+        <div class="monto-inline-wrap" style="display:none"></div>`;
       }).join('');
 
       return `<div class="prov-card${isPaidCard?' is-paid':''}" data-prov-name="${escHtml(provName)}">
@@ -4588,9 +4598,73 @@
   });
 
   $('proveedoresWrap') && document.addEventListener('click', e => {
-    const btn = e.target.closest('[data-action="prov-cell-toggle"],[data-action="prov-pagar"],[data-action="prov-despagar"]');
+    const btn = e.target.closest('[data-action="prov-cell-toggle"],[data-action="prov-pagar"],[data-action="prov-despagar"],[data-action="edit-monto"],[data-action="save-monto"],[data-action="cancel-monto"]');
     if(!btn) return;
     const action = btn.dataset.action;
+
+    if(action === 'edit-monto'){
+      const row = btn.closest('.proj-row');
+      // .monto-inline-wrap is 2 siblings after .proj-row (after .inline-edit-wrap)
+      const wrap = row.nextElementSibling && row.nextElementSibling.nextElementSibling;
+      if(!wrap || !wrap.classList.contains('monto-inline-wrap')) return;
+      const ids = (row.dataset.compraIds||'').split(',').filter(Boolean);
+      const items = ids.map(id => compras.find(x=>x.id===id)).filter(Boolean);
+      const currentTotal = items.reduce((s,c)=>s+(c.total||0),0);
+      wrap.style.display = 'flex';
+      wrap.innerHTML = `<input class="monto-inline-input" type="number" value="${currentTotal}" min="0" step="1"><button class="monto-inline-save" data-action="save-monto">Guardar</button><button class="monto-inline-cancel" data-action="cancel-monto">Cancelar</button>`;
+      wrap.querySelector('.monto-inline-input').focus();
+      return;
+    }
+
+    if(action === 'save-monto'){
+      const wrap = btn.closest('.monto-inline-wrap');
+      const inp = wrap.querySelector('.monto-inline-input');
+      const newTotal = parseFloat(inp.value) || 0;
+      // .proj-row is 2 siblings before .monto-inline-wrap (before .inline-edit-wrap)
+      const row = wrap.previousElementSibling && wrap.previousElementSibling.previousElementSibling;
+      if(!row || !row.classList.contains('proj-row')) return;
+      const ids = (row.dataset.compraIds||'').split(',').filter(Boolean);
+      const compraItems = ids.map(id => ({ idx: compras.findIndex(x=>x.id===id), obj: compras.find(x=>x.id===id) })).filter(x=>x.obj);
+      const oldTotal = compraItems.reduce((s,x)=>s+(x.obj.total||0),0);
+      // Update compras proportionally (equally if oldTotal===0)
+      compraItems.forEach(({idx, obj}) => {
+        const ratio = oldTotal > 0 ? (obj.total||0)/oldTotal : 1/compraItems.length;
+        compras[idx].total = Math.round(newTotal * ratio);
+      });
+      saveCompras();
+      // Sync to gastosReales by position
+      const cotId = row.dataset.cotId;
+      const cidx = cotizaciones.findIndex(x=>x.id===cotId);
+      if(cidx !== -1){
+        const grupos = cotizaciones[cidx].gastosReales || [];
+        compraItems.forEach(({obj: compra}) => {
+          const pidx = grupos.findIndex(g=>g.productoNombre===compra.productoNombre);
+          if(pidx === -1) return;
+          const comprasDeProd = compras
+            .map((x,i)=>({...x,_idx:i}))
+            .filter(x=>x.cotizacionId===cotId && x.productoNombre===compra.productoNombre);
+          const posIdx = comprasDeProd.findIndex(x=>x.id===compra.id);
+          if(posIdx !== -1 && grupos[pidx].items && grupos[pidx].items[posIdx]){
+            grupos[pidx].items[posIdx].monto = compra.total;
+          }
+        });
+        cotizaciones[cidx].gastosReales = grupos;
+        saveCotizaciones(cotizaciones);
+      }
+      wrap.style.display = 'none';
+      wrap.innerHTML = '';
+      showToast('Monto actualizado ✓');
+      renderProveedores();
+      try{ renderContable(); }catch(e){}
+      return;
+    }
+
+    if(action === 'cancel-monto'){
+      const wrap = btn.closest('.monto-inline-wrap');
+      wrap.style.display = 'none';
+      wrap.innerHTML = '';
+      return;
+    }
 
     if(action === 'prov-cell-toggle'){
       const ids = (btn.dataset.ids||'').split(',').filter(Boolean);
