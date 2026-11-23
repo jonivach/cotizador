@@ -1006,6 +1006,19 @@
   .r-warn{color:var(--wnc);background:var(--wnb);}
   .r-badx{color:var(--bdc);background:var(--bdb);}
   #tab-repartidor .r-dot{width:12px;height:12px;border-radius:50%;background:conic-gradient(var(--rgreen) 0 33%,var(--rviolet) 0 66%,var(--rgold) 0);flex:none;}
+  @media(min-width:1100px){
+    #rCatCard .r-gauges{grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;}
+    #rCatCard .r-track{display:none;}
+    #rCatCard .r-mini{display:block;}
+    #rCatCard .r-gh{align-items:flex-start;}
+    #rCatCard .r-g{display:grid!important;grid-template-columns:84px minmax(0,1fr);gap:12px;align-items:center;padding:8px;border-radius:16px;}
+    #rCatCard .r-mini{grid-column:1;grid-row:1;margin:0!important;padding:0!important;}
+    #rCatCard .r-mini svg{width:84px;height:84px;display:block;color:var(--ink);}
+    #rCatCard .r-gh{grid-column:2;grid-row:1;}
+    #rCatCard .r-badge{display:none;}
+    #rCatCard .r-g.r-win{background:var(--greenSoft);box-shadow:inset 0 0 0 1.5px var(--rgreen);}
+    #rCatCard .r-legend{display:none;}
+  }
 </style>
 </head>
 <body>
