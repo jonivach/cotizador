@@ -3,10 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0E8F74">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>Cotizador Productos — Vach*</title>
 <link rel="icon" type="image/x-icon" href="favicon.ico">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{
     --paper:#FFFFFF;--paper-dim:#F0F0F0;--ink:#0A0A0A;--ink-soft:#666666;--line:#E2E2E2;
@@ -860,6 +863,149 @@
     .print-view .pv-table th{color:#555!important;border-bottom:1px solid #111!important;}
     .print-view .pv-grand{color:#111!important;border-top:2px solid #111!important;}
   }
+
+  /* ===== REPARTIDOR TAB — scoped styles ===== */
+  #tab-repartidor{color-scheme:light dark;font-family:Manrope,system-ui,sans-serif;}
+  [data-theme=light] #tab-repartidor{color-scheme:light}
+  [data-theme=dark]  #tab-repartidor{color-scheme:dark}
+  #tab-repartidor{
+    --bg:light-dark(#ffffff,#121314);--card:light-dark(#ffffff,#1b1c1e);--soft:light-dark(#f4f4f3,#232427);
+    --mint:light-dark(#e8f4ee,#1d2b25);--ink:light-dark(#141414,#efefec);--mut:light-dark(#6b6b6b,#9c9c98);
+    --line:light-dark(#e4e4e2,#2f3033);--field:light-dark(#d9d9d6,#3a3b3f);
+    --rgreen:#2f8a63;--rgold:#c49a22;--rred:#c0392b;--rviolet:#6b4fd8;--rorange:#e07b2b;
+    --greenSoft:light-dark(#eef7f2,#1b2a23);
+    padding:0;
+  }
+  /* sub-layout */
+  #tab-repartidor .rep-meta{display:flex;gap:16px;flex-wrap:wrap;padding:12px 20px 10px;border-bottom:1px solid var(--line);font-family:Manrope,sans-serif;}
+  #tab-repartidor .rep-meta div{display:grid;gap:2px;}
+  #tab-repartidor .rep-meta .r-lbl{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);font-weight:600;}
+  #tab-repartidor .rep-meta strong{font-weight:600;font-size:14px;}
+  #tab-repartidor .rep-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,360px);gap:20px;padding:20px 20px 60px;align-items:start;}
+  @media(max-width:900px){#tab-repartidor .rep-layout{grid-template-columns:1fr;}}
+  #tab-repartidor .rep-main{display:grid;gap:16px;}
+  #tab-repartidor .rep-side{position:sticky;top:130px;}
+  @media(max-width:900px){#tab-repartidor .rep-side{position:static;}}
+  /* card */
+  #tab-repartidor .r-card{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden;font-family:Manrope,sans-serif;}
+  #tab-repartidor .r-ch{display:flex;align-items:center;gap:10px;padding:12px 20px;background:var(--soft);border-bottom:1px solid var(--line);font-weight:700;font-size:15px;flex-wrap:wrap;cursor:pointer;user-select:none;}
+  #tab-repartidor .r-ch.mint{background:var(--mint);}
+  #tab-repartidor .r-ch i.sq{width:13px;height:13px;border-radius:3px;background:var(--ink);flex:none;}
+  #tab-repartidor .r-ch .sp{flex:1;}
+  #tab-repartidor .r-ch::after{content:"";width:8px;height:8px;border-right:2px solid var(--mut);border-bottom:2px solid var(--mut);transform:rotate(45deg);margin-left:auto;margin-right:4px;}
+  #tab-repartidor .r-card.r-col>.r-ch::after{transform:rotate(-45deg);}
+  #tab-repartidor .r-card.r-col>.r-ch{border-bottom:0;}
+  #tab-repartidor .r-card.r-col>.r-cb{display:none!important;}
+  #tab-repartidor .r-cb{padding:16px 20px;}
+  /* side */
+  #tab-repartidor .rep-side .r-card{background:light-dark(#fafaf9,#1b1c1e);}
+  #tab-repartidor .rep-side .r-cb{padding:18px 20px;}
+  /* shared text styles */
+  #tab-repartidor .r-lbl{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);font-weight:600;}
+  #tab-repartidor .r-cap{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);font-weight:600;}
+  #tab-repartidor .r-note{font-size:13px;color:var(--mut);}
+  #tab-repartidor .r-fine{font-size:13px;color:var(--mut);}
+  #tab-repartidor .r-wnote{border-left:3px solid var(--rorange);padding-left:10px;}
+  /* fields */
+  #tab-repartidor .r-fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;}
+  #tab-repartidor .r-fields.f2{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start;}
+  @media(max-width:600px){#tab-repartidor .r-fields.f2{grid-template-columns:1fr;}}
+  #tab-repartidor .r-fields label{display:block;margin-bottom:5px;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);font-weight:600;}
+  #tab-repartidor select, #tab-repartidor input:not([type=checkbox]){font-family:Manrope,sans-serif;font-size:15px;color:var(--ink);min-height:42px;width:100%;background:var(--card);border:1px solid var(--field);border-radius:10px;padding:0 12px;box-sizing:border-box;}
+  #tab-repartidor select{-webkit-appearance:none;appearance:none;padding-right:32px;background-image:linear-gradient(45deg,transparent 50%,var(--mut) 50%),linear-gradient(135deg,var(--mut) 50%,transparent 50%);background-position:right 16px center,right 11px center;background-size:5px 5px;background-repeat:no-repeat;}
+  #tab-repartidor input.r-num{text-align:right;font-variant-numeric:tabular-nums;}
+  #tab-repartidor .r-big input{font-size:20px;font-weight:700;min-height:48px;}
+  #tab-repartidor :focus-visible{outline:2px solid var(--rgreen);outline-offset:2px;}
+  /* buttons */
+  #tab-repartidor button{font-family:Manrope,sans-serif;font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);min-height:40px;border:1px solid var(--field);background:var(--card);border-radius:10px;padding:0 14px;cursor:pointer;}
+  #tab-repartidor button.r-green{background:var(--rgreen);border-color:var(--rgreen);color:#fff;}
+  #tab-repartidor button.r-gold{background:var(--rgold);border-color:var(--rgold);color:#1a1405;}
+  #tab-repartidor button.r-ghost{background:transparent;text-transform:none;letter-spacing:0;font-weight:600;}
+  #tab-repartidor button:disabled{opacity:.4;cursor:default;}
+  /* allow chips */
+  #tab-repartidor #rAllow{display:inline-flex;flex-wrap:wrap;gap:4px;padding:4px;border:1px solid var(--line);border-radius:24px;background:var(--soft);width:100%;}
+  #tab-repartidor #rAllow button{border:0;border-radius:999px;min-height:34px;padding:0 14px;text-transform:none;letter-spacing:0;font-size:14px;font-weight:600;background:transparent;color:var(--mut);flex:1;}
+  #tab-repartidor #rAllow button[aria-pressed=true]{background:var(--ink);color:var(--bg);}
+  #tab-repartidor #rAllow button[aria-pressed=false]{text-decoration:line-through;}
+  /* rows in side panel */
+  #tab-repartidor .r-rows{border-top:1px solid var(--line);}
+  #tab-repartidor .r-rw{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--line);font-size:13.5px;}
+  #tab-repartidor .r-rw span:first-child{color:var(--mut);}
+  #tab-repartidor .r-rw span:last-child{font-weight:600;text-align:right;white-space:nowrap;}
+  /* summary panel */
+  #tab-repartidor #rVName{font-size:28px;font-weight:800;line-height:1.1;letter-spacing:-.02em;margin:2px 0 10px;overflow-wrap:anywhere;}
+  #tab-repartidor #rVCost{font-weight:700;font-size:14px;margin:10px 0 4px;}
+  #tab-repartidor #rVWhy{color:var(--mut);font-size:13px;}
+  #tab-repartidor .r-gain{border:1.5px solid var(--rgreen);background:var(--greenSoft);border-radius:12px;padding:12px 14px;margin:0 0 14px;}
+  #tab-repartidor .r-gain .r-cap{color:var(--rgreen);}
+  #tab-repartidor #rSTxt{font-size:15px;font-weight:800;margin:4px 0;}
+  #tab-repartidor #rSWhy{font-size:13px;color:var(--mut);}
+  #tab-repartidor .r-btns{display:grid;gap:8px;margin-top:14px;}
+  #tab-repartidor .r-total{margin-top:14px;}
+  #tab-repartidor .r-total b{display:block;font-size:28px;font-weight:800;line-height:1.1;}
+  #tab-repartidor .r-total b em{font-style:normal;color:var(--rgold);}
+  /* category gauges */
+  #tab-repartidor .r-gauges{display:grid;gap:16px;}
+  #tab-repartidor .r-g h3{margin:0;font-size:14px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+  #tab-repartidor .r-g h3 span{font-weight:500;color:var(--mut);font-size:13px;}
+  #tab-repartidor .r-track{position:relative;height:26px;display:flex;border:1px solid var(--field);border-radius:8px;overflow:hidden;background:var(--soft);margin-top:6px;}
+  #tab-repartidor .r-seg{height:100%;border-right:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--mut);position:relative;z-index:1;}
+  #tab-repartidor .r-fillU,.r-fillJ{position:absolute;top:0;bottom:0;left:0;transition:width .4s cubic-bezier(.2,.8,.2,1);}
+  #tab-repartidor .r-fillU{background:light-dark(#cfd3d0,#3b3e42);}
+  #tab-repartidor .r-fillJ{background:var(--rgreen);opacity:.85;}
+  #tab-repartidor .r-g.r-win .r-track{box-shadow:0 0 0 2px var(--rgreen);}
+  #tab-repartidor .r-gh{display:flex;align-items:center;gap:12px;}
+  #tab-repartidor .r-badge{flex:none;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:18px;}
+  #tab-repartidor .r-gh .r-who2{flex:1;}
+  #tab-repartidor .r-gh .r-who2 b{display:block;font-size:15px;}
+  #tab-repartidor .r-gh .r-who2 span{font-size:13px;color:var(--mut);}
+  #tab-repartidor .r-gh .r-who2 strong{color:var(--ink);}
+  #tab-repartidor .r-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--mut);margin-top:14px;}
+  #tab-repartidor .r-legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px;}
+  /* mini donut */
+  #tab-repartidor .r-mini{display:none;}
+  /* table */
+  #tab-repartidor table{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums;font-family:Manrope,sans-serif;}
+  #tab-repartidor th,#tab-repartidor td{padding:7px 9px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap;}
+  #tab-repartidor th{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);font-weight:600;}
+  #tab-repartidor th:first-child,#tab-repartidor td:first-child{text-align:left;}
+  #tab-repartidor tr.r-best td{font-weight:800;}
+  #tab-repartidor tr.r-best td:first-child{box-shadow:inset 3px 0 var(--rgreen);}
+  #tab-repartidor .r-bad{color:var(--rred);}
+  #tab-repartidor .r-scroll{overflow-x:auto;}
+  #tab-repartidor .r-grid input{min-height:36px;padding:0 8px;min-width:100px;border-radius:7px;}
+  #tab-repartidor .r-grid select{min-height:36px;border-radius:7px;}
+  #tab-repartidor .r-grid td{padding:3px 5px;}
+  #tab-repartidor .r-grid th.r-who{font-size:14px;letter-spacing:0;text-transform:none;color:var(--ink);font-weight:700;text-align:right;padding-bottom:8px;}
+  #tab-repartidor .r-grid th.r-who span{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);font-weight:600;}
+  #tab-repartidor input[type=checkbox]{width:16px;min-width:0;min-height:16px;height:16px;padding:0;accent-color:var(--rgreen);}
+  /* log */
+  #tab-repartidor .r-log{list-style:none;padding:0;margin:0;}
+  #tab-repartidor .r-log li{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:13.5px;flex-wrap:wrap;}
+  /* cols */
+  #tab-repartidor .r-cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:24px;}
+  #tab-repartidor .r-cols h4{margin:0 0 8px;font-size:14px;font-weight:700;}
+  #tab-repartidor ul.r-s{padding-left:16px;margin:0;font-size:13.5px;}
+  #tab-repartidor ul.r-s li{margin:7px 0;}
+  /* drop zone */
+  #tab-repartidor .r-drop{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border:1.5px dashed var(--field);border-radius:12px;padding:20px;cursor:pointer;text-align:center;font-size:14px;}
+  #tab-repartidor .r-drop span{color:var(--mut);font-size:13px;}
+  #tab-repartidor .r-drop.over{border-color:var(--rgreen);background:var(--greenSoft);}
+  /* alerts */
+  #tab-repartidor .r-alerts{list-style:none;margin:0;padding:0;display:grid;gap:8px;}
+  #tab-repartidor .r-alerts li{display:flex;gap:10px;align-items:flex-start;border-radius:12px;padding:10px 12px;font-size:13.5px;line-height:1.4;}
+  #tab-repartidor .r-alerts li b{font-weight:800;}
+  #tab-repartidor .r-alerts li .r-ic{flex:none;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:12px;background:currentColor;}
+  #tab-repartidor .r-alerts li .r-ic span{color:light-dark(#fff,#111);}
+  #tab-repartidor .r-sev{display:inline-flex;align-items:center;gap:8px;border-radius:10px;padding:7px 11px;font-size:13px;font-weight:700;margin:0 0 10px;}
+  /* chip */
+  :root{--okc:light-dark(#1f7a52,#5fd39b);--okb:light-dark(#e6f4ec,#173226);--wnc:light-dark(#9a6a00,#f0c24f);--wnb:light-dark(#fdf3dc,#33290f);--bdc:light-dark(#b3261e,#ff8a80);--bdb:light-dark(#fde7e5,#3a1714)}
+  .r-chip{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 9px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;}
+  .r-chip::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;}
+  .r-ok{color:var(--okc);background:var(--okb);}
+  .r-warn{color:var(--wnc);background:var(--wnb);}
+  .r-badx{color:var(--bdc);background:var(--bdb);}
+  #tab-repartidor .r-dot{width:12px;height:12px;border-radius:50%;background:conic-gradient(var(--rgreen) 0 33%,var(--rviolet) 0 66%,var(--rgold) 0);flex:none;}
 </style>
 </head>
 <body>
@@ -943,6 +1089,7 @@
     <button class="tabbtn" data-tab="proveedores"><span class="dot"></span>Proveedores <span class="count" id="countProveedores">0</span></button>
     <button class="tabbtn" data-tab="calendario"><span class="dot"></span>Calendario</button>
     <button class="tabbtn" data-tab="contable"><span class="dot"></span>Contable</button>
+    <button class="tabbtn" data-tab="repartidor"><span class="dot" style="background:#2f8a63;"></span>Repartidor</button>
     <div class="tabbar-actions"></div>
   </div>
   <div class="loading-banner" id="loadingBanner">
@@ -1203,6 +1350,152 @@
   </div>
   </section>
 
+  <section class="tabpanel" id="tab-repartidor">
+  <div class="rep-meta">
+    <div><span class="r-lbl">Próxima recategorización</span><strong id="rMRec">—</strong></div>
+    <div><span class="r-lbl">Topes vigentes</span><strong id="rVigTxt">Agosto 2026</strong></div>
+  </div>
+  <div class="rep-layout">
+  <div class="rep-main">
+
+  <section class="r-card" id="rCalcCard">
+    <div class="r-ch mint"><i class="sq" style="background:var(--rgreen)"></i>Calculadora · ¿con qué CUIT facturo?</div>
+    <div class="r-cb">
+      <div class="r-fields f2">
+        <div class="r-big"><label class="r-lbl" for="rAmt">Monto del trabajo</label><input id="rAmt" class="r-num" inputmode="decimal" placeholder="$ 0" autocomplete="off"></div>
+        <div><label class="r-lbl" for="rJm">Mes de facturación</label><select id="rJm"></select></div>
+        <div><label class="r-lbl" for="rCli">Cliente</label><input id="rCli" list="rCliL" autocomplete="off" placeholder="Nombre del cliente (opcional)"><datalist id="rCliL"></datalist></div>
+        <div><span class="r-lbl" style="display:block;margin-bottom:5px">CUIT habilitados</span><div id="rAllow"></div></div>
+      </div>
+      <p class="r-fine" id="rCliN" style="margin:8px 0 0"></p>
+      <p class="r-fine" id="rSub" style="margin:12px 0 0"></p>
+    </div>
+  </section>
+
+  <section class="r-card" id="rAlertCard">
+    <div class="r-ch"><i class="sq" style="background:var(--rred)"></i>Alertas<span class="sp"></span><span class="r-chip" id="rAlertN"></span></div>
+    <div class="r-cb"><ul class="r-alerts" id="rAlerts"></ul></div>
+  </section>
+
+  <section class="r-card" id="rCatCard">
+    <div class="r-ch"><i class="sq"></i>Categoría de cada CUIT</div>
+    <div class="r-cb">
+      <div class="r-gauges" id="rGauges"></div>
+      <div class="r-legend"><span><i style="background:light-dark(#cfd3d0,#3b3e42)"></i>Ya facturado en la ventana</span><span><i style="background:var(--rgreen)"></i>Este trabajo, si lo facturás ahí</span></div>
+    </div>
+  </section>
+
+  <section class="r-card" id="rImpCard">
+    <div class="r-ch"><i class="sq" style="background:var(--rgreen)"></i>Importar de ARCA</div>
+    <div class="r-cb">
+      <p class="r-note" style="margin-top:0">En ARCA, entrá a <b>Mis Comprobantes → Emitidos</b> de cada CUIT, buscá desde el 1/1 del año hasta hoy y descargá el <b>CSV</b>. Subí acá los tres archivos juntos: la calculadora reemplaza lo facturado de cada mes con lo que dice ARCA.</p>
+      <label class="r-drop" for="rImpF"><input type="file" id="rImpF" accept=".csv,text/csv" multiple hidden><b>Elegir archivos CSV</b><span>o arrastralos acá</span></label>
+      <div id="rImpR" style="margin-top:10px"></div>
+    </div>
+  </section>
+
+  <section class="r-card" id="rNcCard">
+    <div class="r-ch"><i class="sq" style="background:var(--rorange)"></i>Nota de crédito</div>
+    <div class="r-cb">
+      <p class="r-note" style="margin-top:0">Si anulás o corregís una factura con una nota de crédito, cargala acá: se resta de lo facturado por ese CUIT en el mes en que la emitís.</p>
+      <div class="r-fields f2">
+        <div><label class="r-lbl" for="rNcC">CUIT que la emite</label><select id="rNcC"></select></div>
+        <div><label class="r-lbl" for="rNcM">Mes de emisión</label><select id="rNcM"></select></div>
+        <div class="r-big"><label class="r-lbl" for="rNcA">Monto</label><input id="rNcA" class="r-num" inputmode="decimal" placeholder="$ 0" autocomplete="off"></div>
+        <div><label class="r-lbl" for="rNcT">Cliente o motivo</label><input id="rNcT" autocomplete="off" placeholder="Opcional"></div>
+      </div>
+      <div class="r-gain" id="rNcPrev" hidden style="margin:12px 0 0"></div>
+      <div style="margin-top:12px"><button class="r-green" id="rNcReg" type="button" disabled>Registrar nota de crédito</button></div>
+    </div>
+  </section>
+
+  <section class="r-card" id="rCmpCard">
+    <div class="r-ch"><i class="sq" style="background:var(--rviolet)"></i>Comparación</div>
+    <div class="r-cb">
+      <div class="r-scroll"><table>
+        <thead><tr><th>Si facturás con</th><th id="rH1">Queda en</th><th id="rH2">Cuotas</th><th id="rH3">Cuotas</th><th>Total año</th><th>Diferencia</th></tr></thead>
+        <tbody id="rCmp"></tbody>
+      </table></div>
+      <p class="r-fine" id="rBaseLine" style="margin-bottom:0"></p>
+    </div>
+  </section>
+
+  <section class="r-card" id="rFactCard">
+    <div class="r-ch"><i class="sq" style="background:var(--rgold)"></i>Facturación de cada CUIT</div>
+    <div class="r-cb">
+      <p class="r-note" style="margin-top:0">Lo facturado mes a mes. En los meses que todavía no pasaron podés poner lo que ya sabés que vas a facturar.</p>
+      <p class="r-note r-wnote" id="rEstN">Los montos de enero a octubre 2026 están estimados. Reemplazalos por los números exactos.</p>
+      <div class="r-scroll"><table class="r-grid">
+        <thead id="rGh"></thead><tbody id="rGb"></tbody><tfoot id="rGf"></tfoot>
+      </table></div>
+      <div class="r-fields" style="margin-top:18px">
+        <div><label class="r-lbl" for="rUpd">Actualización esperada de escalas (%)</label><input id="rUpd" class="r-num" inputmode="decimal" placeholder="0"></div>
+        <div><label class="r-lbl" for="rFut">Facturación esperada de los 3 por mes</label><input id="rFut" class="r-num" inputmode="decimal"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="r-card" id="rLogCard">
+    <div class="r-ch"><i class="sq" style="background:var(--rorange)"></i>Facturas registradas</div>
+    <div class="r-cb"><ul class="r-log" id="rLog"></ul><p class="r-fine" style="margin-bottom:0">Todo queda guardado en Firebase.</p></div>
+  </section>
+
+  <section class="r-card" id="rTopCard">
+    <div class="r-ch"><i class="sq" style="background:var(--rviolet)"></i>Topes y cuotas de ARCA<span class="sp"></span><span class="r-chip" id="rTopChip"></span></div>
+    <div class="r-cb">
+      <p class="r-note" style="margin-top:0">ARCA actualiza esta tabla en febrero y en agosto. Cuando salgan los valores nuevos, cargalos acá.</p>
+      <div class="r-fields" style="margin-bottom:12px">
+        <div style="max-width:240px"><label class="r-lbl" for="rVigM">Vigentes desde</label><select id="rVigM"></select></div>
+      </div>
+      <div class="r-scroll"><table class="r-grid" id="rTopT"><thead><tr><th>Categoría</th><th style="text-align:right">Tope anual</th><th style="text-align:right">Cuota servicios</th><th style="text-align:right">Cuota bienes</th></tr></thead><tbody id="rTopB"></tbody></table></div>
+      <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap"><button type="button" id="rTopReset">Volver a agosto 2026</button></div>
+    </div>
+  </section>
+
+  <section class="r-card" id="rHowCard">
+    <div class="r-ch"><i class="sq" style="background:var(--rred)"></i>Cómo decide</div>
+    <div class="r-cb r-cols">
+      <div><h4>La cuenta</h4><ul class="r-s">
+        <li>Busca que entre los 3 paguen lo menos posible en los próximos 12 meses.</li>
+        <li>Cada factura cuenta para dos recategorizaciones: la próxima y la siguiente.</li>
+        <li><b>Reserva:</b> a cada CUIT le deja sin usar el monto de la fila "Reserva", para los trabajos que solo puede facturar esa persona.</li>
+        <li>Incluye Ingresos Brutos CABA (3% anual del tope de la categoría) en los CUIT marcados.</li>
+      </ul></div>
+      <div><h4>A tener en cuenta</h4><ul class="r-s">
+        <li>Lo caro son los saltos de categoría: de G a H la cuota sube unos $292 mil por mes.</li>
+        <li>Registrá cada factura en el momento, así la próxima recomendación usa datos al día.</li>
+        <li>Cada factura, y cada parte de una factura partida, corresponde al trabajo de quien la emite.</li>
+      </ul></div>
+    </div>
+  </section>
+
+  </div><!-- /rep-main -->
+  <div class="rep-side">
+    <section class="r-card" id="rSumCard" aria-live="polite">
+      <div class="r-ch"><span class="r-dot"></span>Resumen</div>
+      <div class="r-cb">
+        <div class="r-gain" id="rVSplit" hidden>
+          <div class="r-cap">★ Más barato: partilo en dos facturas</div>
+          <div id="rSTxt"></div>
+          <div id="rSWhy"></div>
+        </div>
+        <div class="r-sev" id="rVSev" hidden></div>
+        <div class="r-cap" id="rVCap">Facturalo con</div>
+        <div id="rVName">—</div>
+        <div class="r-rows" id="rSumRows"></div>
+        <div id="rVCost"></div>
+        <div id="rVWhy"></div>
+        <div class="r-btns">
+          <button class="r-green" id="rReg" type="button">Registrar factura</button>
+          <button id="rReg2" type="button" hidden>Registrar con otro</button>
+          <button class="r-gold" id="rRegS" type="button" hidden>Registrar partido</button>
+        </div>
+      </div>
+    </section>
+  </div><!-- /rep-side -->
+  </div><!-- /rep-layout -->
+  </section>
+
 </div><!-- /appRoot -->
 
 <!-- Biblioteca de insumos panel -->
@@ -1286,6 +1579,7 @@
   auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(() => {});
   const db = firebase.firestore();
   const COTZ_KEY = 'productos_cotizaciones_v1';
+  const REPARTIDOR_KEY = 'repartidor_estado_v1';
   function cloudDocRef(key){ return db.collection('cotizadores').doc(key); }
 
   // ======================================================
@@ -1424,6 +1718,7 @@
     if(tabName === 'contable')  try{ renderContable();  }catch(e){}
     if(tabName === 'calendario') try{ renderCalendario(); }catch(e){}
     if(tabName === 'proveedores') try{ renderProveedores(); }catch(e){}
+    if(tabName === 'repartidor') try{ if(typeof rCalc==='function') rCalc(); }catch(e){}
   }
 
   document.querySelectorAll('.tabbtn').forEach(btn => {
@@ -4098,20 +4393,10 @@
   if(window._gsiLoaded){ initGCal(); }
   else { window._gcalInitPending = initGCal; }
 
-  // ---- Tabbar top dinámico en mobile ----
-  (function(){
-    function updateTabbarTop(){
-      const topbar = document.querySelector('.topbar');
-      if(!topbar) return;
-      const h = topbar.getBoundingClientRect().height;
-      document.documentElement.style.setProperty('--tabbar-top', h + 'px');
-    }
-    updateTabbarTop();
-    window.addEventListener('resize', updateTabbarTop);
-    if(window.ResizeObserver){
-      new ResizeObserver(updateTabbarTop).observe(document.querySelector('.topbar') || document.body);
-    }
-  })();
+  // ---- Tabbar top dinámico en mobile (ResizeObserver para topbar wrap) ----
+  if(window.ResizeObserver){
+    new ResizeObserver(fixTabbarTop).observe(document.querySelector('.topbar') || document.body);
+  }
 
   $('gcalBtn') && $('gcalBtn').addEventListener('click', () => {
     if($('gcalBtn').dataset.connected === '1'){
@@ -5356,6 +5641,276 @@
   // ======================================================
   // INIT
   // ======================================================
+  // ======================================================
+  // REPARTIDOR — Pestaña "Calculadora"
+  // ======================================================
+  {
+  const $r=id=>document.getElementById(id);
+  const RCATS=[["A",12009410.45,49527.18,49527.18],["B",17595182.74,56379.08,56379.08],["C",24670494.31,66020.12,64530.58],["D",30628651.43,84612.93,82564.81],["E",36028231.33,119811.45,108267.51],["F",45151659.41,150784.21,129930.65],["G",53995798.87,230312.94,158815.05],["H",81924660.37,522706.68,317895.01],["I",91699761.90,963747.86,474992.78],["J",105012519.20,1167299.76,580793.69],["K",126610838.75,1614446.04,702103.24]];
+  const RCATS0=RCATS.map(x=>x.slice());
+  const RMES=["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+  const rfmt=n=>(n<0?"−$":"$")+Math.round(Math.abs(n)).toLocaleString("es-AR");
+  const rparse=s=>{s=String(s||"").replace(/[^\d.,]/g,"");if(!s)return 0;if(s.includes(","))s=s.replace(/\./g,"").replace(",",".");else if((s.match(/\./g)||[]).length>1||/\.\d{3}$/.test(s))s=s.replace(/\./g,"");return parseFloat(s)||0};
+  const rshow=n=>n?Math.round(n).toLocaleString("es-AR"):"";
+  const resc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  const rnow=new Date(),RY=rnow.getFullYear(),RM=rnow.getMonth();
+  const rendM=RM<=5?5:11;
+  const rwin=[];for(let i=11;i>=0;i--){const d=new Date(RY,rendM-i,1);rwin.push({k:d.getFullYear()+"-"+(d.getMonth()+1),t:RMES[d.getMonth()]+" "+String(d.getFullYear()).slice(2),fut:d>new Date(RY,RM,1)})}
+  const rrecat=rendM==11?"enero "+(RY+1):"julio "+RY;
+  const rper1=rendM==11?"feb–jul":"ago–ene",rper2=rendM==11?"ago–ene":"feb–jul";
+  const rwin2=rwin.slice(6).map(w=>w.k);
+  const rmk=a=>{const v={};a.forEach((x,i)=>{if(x)v["2026-"+(i+1)]=x});return v};
+  let rCloudLoaded=false;
+  let rst={c:[
+    {n:"Johanna",a:2,b:1,v:rmk([0,0,0,0,0,0,0,0,12317200,2353800,8424900])},
+    {n:"Jonathan",a:2,b:1,v:rmk([108000,240000,18834098,10963660,2801500,8248100,3590000,5939200,7578067,0,6457000])},
+    {n:"Julián",a:2,b:0,v:rmk([3193000,5685600,14325000,7725000,1520000,2509080,0,3237217,1354959.27,1068931.78])}],log:[],upd:0,est:0,cl:{}};
+  const rsave=()=>{if(rCloudLoaded)cloudDocRef(REPARTIDOR_KEY).set(rst).catch(e=>console.error('[Repartidor] save:',e))};
+  function rApplyFixes(){
+    if(!rst.cl)rst.cl={};
+    ["27376067594","20397590454","20428221045"].forEach((x,i)=>{if(rst.c[i]&&!rst.c[i].cuit)rst.c[i].cuit=x});
+    if(!rst.clp){const CL0={"Rotundo Media Group S.R.L.":[1,0,0],"We Are Catch S.A.":[1,1,1],"2020 Films S.A.":[1,0,0],"Moh S. R. L.":[1,1,0],"Integra Consulting Business S.R.L.":[1,0,0],"Organizacion Para La Continuidad Israelita Asociacion Civil I. E. R.":[1,1,0],"Sztutwojner Gaston Francisco":[1,0,0],"Bienba S.A.":[1,1,1],"Legado Mv S.R.L.":[1,0,0],"Minita S.R.L.":[1,1,1],"Eventos Todo Terreno S.R.L.":[1,1,0],"Sunshine Lab":[1,0,1],"Df Entertainment S.A.":[0,1,0],"Iml Influence Media Lab S.R.L.":[0,1,0],"Alternativo Agency Srl":[0,1,1],"Btlandia Sa":[0,1,1],"Magnetica Producciones Mas Ideas S.A.":[0,1,0],"Sneakerhouse":[0,1,0],"Business Y Travel S R L":[0,1,0],"Agencia Numero Tres S.A.":[0,1,1],"Pereyra Mariano Raul":[0,1,0],"B-Side Sa":[0,1,1],"Kosacoff Tamara":[0,1,0],"Pahue Technologies Sa":[0,1,0],"Asociacion Olami Asociacion Civil":[0,1,0],"Grupo Indico S.R.L.":[0,1,0],"Interpromo Srl":[0,1,0],"Felix Hub Creativo S.R.L.":[0,1,0],"Vkmp Agency S.A.":[0,1,0],"Cairo Martin Hernan":[0,1,0],"Dajaus":[0,1,0],"Abrazo S.A.":[0,1,0],"Room 23 S.R.L.":[0,1,0],"Fundacion Tzedaka":[0,1,0],"Polenta S.R.L.":[0,1,0],"Wonder Argentina S.R.L.":[0,1,1],"Into The Woods Srl":[0,1,0],"Corporation Bussiness Growing Srl":[0,1,0],"Wd Srl":[0,1,0],"Df Entertainment Ba S.A.U.":[0,1,0],"Jal Entertainment S.R.L.":[0,1,0],"Bensiñor Natalia":[0,1,0],"Futuroscope S.A.":[0,1,0],"Cinco Yardas S.R.L.":[0,0,1],"Asociacion Union Israelita Sefaradi De Villa Urquiza":[0,0,1],"Collage Lab S.R.L.":[0,0,1],"Lizo Productora":[0,0,1],"Total Home S.A.":[0,0,1],"Matt Sociedad De Responsabilidad Limitada":[0,0,1],"Cooperativa De Trabajo Voz E Imagen Del Sur Limitada":[0,0,1],"Inkuar S.R.L":[0,0,1],"Asociacion Religiosa Y Cultural Israelita Lamroth Hakol":[0,0,1],"Welbis S.R.L.":[0,0,1]};
+      for(const[n,m]of Object.entries(CL0))if(!rst.cl[n])rst.cl[n]=m;rst.clp=1}
+    if(!rst.fix1){const fx=(i,k,o,n)=>{if(rst.c[i]&&rst.c[i].v[k]===o)rst.c[i].v[k]=n};
+      fx(1,"2026-1",208000,108000);fx(1,"2026-11",5440000,6457000);fx(2,"2026-3",13725000,14325000);fx(2,"2026-4",8325000,7725000);rst.fix1=1}
+    if(!rst.colp)rst.colp={rCmpCard:1,rFactCard:1,rLogCard:1,rHowCard:1,rTopCard:1,rNcCard:1,rImpCard:1};
+    if(!rst.vig)rst.vig="2026-8";
+    if(rst.cats&&rst.cats.length==11)rst.cats.forEach((x,i)=>{RCATS[i][1]=+x[1]||RCATS[i][1];RCATS[i][2]=+x[2]||RCATS[i][2];RCATS[i][3]=+x[3]||RCATS[i][3]});
+  }
+  const rclFind=n=>{const l=n.trim().toLowerCase();return Object.keys(rst.cl).find(k=>k.toLowerCase()==l)};
+  let ral=[1,1,1];
+  function rDrawAllow(){$r("rAllow").innerHTML=rst.c.map((c,i)=>`<button type="button" data-al="${i}" aria-pressed="${ral[i]?"true":"false"}">${resc(c.n)}</button>`).join("");
+    document.querySelectorAll("#rAllow [data-al]").forEach(b=>b.addEventListener("click",()=>{ral[+b.dataset.al]=ral[+b.dataset.al]?0:1;rDrawAllow();rCalc()}));
+    $r("rCliL").innerHTML=Object.keys(rst.cl).map(n=>`<option value="${resc(n)}">`).join("")}
+  function rBuildGrid(){
+    $r("rGh").innerHTML=`<tr><th>Mes</th>${rst.c.map(c=>`<th class="r-who">${resc(c.n)}<span>${c.a==2?"Servicios":"Bienes"}</span></th>`).join("")}</tr><tr><th class="r-lbl">Paga IIBB CABA</th>${rst.c.map((c,i)=>`<th><label style="display:flex;gap:8px;align-items:center;justify-content:flex-end;min-height:34px;font-weight:600;text-transform:none;letter-spacing:0;font-size:14px;color:var(--ink)"><input type="checkbox" id="rb${i}" ${c.b?"checked":""}> Sí</label></th>`).join("")}</tr><tr><th class="r-lbl">Reserva</th>${rst.c.map((c,i)=>`<th><input class="r-num" id="rrs${i}" inputmode="decimal" value="${rshow(rresv()[i])}" placeholder="0" aria-label="Reserva de ${resc(c.n)}"></th>`).join("")}</tr>`;
+    $r("rGb").innerHTML=rwin.map(w=>`<tr><td>${w.t}${w.fut?" ·":""}</td>${rst.c.map((c,i)=>`<td><input class="r-num" inputmode="decimal" data-c="${i}" data-k="${w.k}" value="${rshow(c.v[w.k])}" placeholder="0"></td>`).join("")}</tr>`).join("");
+    rst.c.forEach((c,i)=>{
+      $r("rb"+i).addEventListener("change",e=>{c.b=e.target.checked?1:0;rsave();rCalc()});
+      $r("rrs"+i).addEventListener("input",e=>{rresv();rst.res[i]=rparse(e.target.value);rsave();rCalc()});
+      $r("rrs"+i).addEventListener("blur",e=>{e.target.value=rshow(rparse(e.target.value))});
+    });
+    document.querySelectorAll("#rGb input").forEach(el=>{
+      el.addEventListener("input",()=>{rst.c[el.dataset.c].v[el.dataset.k]=rparse(el.value);rst.est=0;$r("rEstN").hidden=true;rsave();rCalc()});
+      el.addEventListener("blur",()=>{el.value=rshow(rparse(el.value))});
+    });
+  }
+  const rtotOf=c=>rwin.reduce((s,w)=>s+(c.v[w.k]||0),0);
+  function rcatOf(t,f){const i=RCATS.findIndex(c=>t<=c[1]*f);return i}
+  function rcuota(i,a,f,b){return i<0?Infinity:RCATS[i][a]*f+(b?RCATS[i][1]*f*0.0025:0)}
+  function restNext(fixed,F,f){let t=0,n=0;for(let k=0;k<=10;k++){const v=rminNext(fixed,F*(0.5+k*0.1),f);if(!isFinite(v))return Infinity;t+=v;n++}return t/n}
+  function rminNext(fixed,F,f){let best=Infinity;const n=RCATS.length;
+    for(let x=0;x<n;x++){const c0=RCATS[x][1]*f;if(c0<fixed[0])continue;const k0=rcuota(x,rst.c[0].a,f,rst.c[0].b);
+      for(let y=0;y<n;y++){const c1=RCATS[y][1]*f;if(c1<fixed[1])continue;const k1=k0+rcuota(y,rst.c[1].a,f,rst.c[1].b);if(k1>=best)continue;
+        for(let z=0;z<n;z++){const c2=RCATS[z][1]*f;if(c2<fixed[2])continue;
+          if(c0-fixed[0]+c1-fixed[1]+c2-fixed[2]<F)continue;const k=k1+rcuota(z,rst.c[2].a,f,rst.c[2].b);if(k<best)best=k;break}}}
+    return best}
+  function rresv(){if(!rst.res)rst.res=[2e6,2e6,2e6];return rst.res.map(x=>+x||0)}
+  function revalAll(amt){
+    const f=1+(rparse($r("rUpd").value)/100||0);
+    const F=6*(rparse($r("rFut").value)||rdefFut());
+    const tots=rst.c.map(rtotOf),R=rresv();
+    const inW2=rwin2.includes($r("rJm").value);
+    const fix2=rst.c.map(c=>rwin2.reduce((s,k)=>s+(c.v[k]||0),0));
+    const base1=rst.c.map((c,i)=>rcuota(rcatOf(tots[i],f),c.a,f,c.b));
+    const b1=base1.reduce((a,b)=>a+b,0);
+    const b2=restNext(fix2,F,f);
+    const opts=rst.c.map((c,i)=>{
+      const t=tots[i]+amt,ci=rcatOf(t,f),cr=rcatOf(t+R[i],f);
+      const m1=base1.reduce((s,b,j)=>s+(j==i?rcuota(cr,c.a,f,c.b):b),0);
+      const m2=restNext(fix2.map((x,j)=>j==i&&inW2?x+amt+R[i]:x),F,f);
+      const room=ci<0?-Infinity:RCATS[ci][1]*f-t-R[i];
+      const m1r=base1.reduce((s,b,j)=>s+(j==i?rcuota(ci,c.a,f,c.b):b),0),m2r=R[i]?restNext(fix2.map((x,j)=>j==i&&inW2?x+amt:x),F,f):m2;
+      return{i,t,ci,m1,m2,cost:6*m1+6*m2,room,m1r,m2r,costR:6*m1r+6*m2r};
+    });
+    const rank=opts.filter(o=>ral[o.i]).sort((x,y)=>x.cost-y.cost||x.room-y.room);
+    const costV=v=>{let m1=0;for(let i=0;i<3;i++)m1+=rcuota(rcatOf(tots[i]+v[i]+(v[i]?R[i]:0),f),rst.c[i].a,f,rst.c[i].b);const m2=restNext(fix2.map((x,i)=>inW2?x+v[i]+(v[i]?R[i]:0):x),F,f);let m1r=0;for(let i=0;i<3;i++)m1r+=rcuota(rcatOf(tots[i]+v[i],f),rst.c[i].a,f,rst.c[i].b);const m2r=restNext(fix2.map((x,i)=>inW2?x+v[i]:x),F,f);return{m1,m2,cost:6*m1+6*m2,costR:6*m1r+6*m2r}};
+    let split=null;
+    if(amt>=200000){
+      for(let i=0;i<3;i++)for(let j=0;j<3;j++){if(i>=j||!ral[i]||!ral[j])continue;
+        const xs=new Set();for(let k=1;k<20;k++)xs.add(Math.round(amt*k/20/1000)*1000);
+        for(const[a,b]of[[i,j],[j,i]])for(const k of RCATS){for(const base0 of[tots[a],inW2?fix2[a]:null]){if(base0==null)continue;const base=base0+R[a];const x=Math.floor((k[1]*f-base)/1000)*1000-1000;if(x>0&&x<amt)xs.add(a==i?x:amt-x)}}
+        for(const x of xs){if(x<=0||x>=amt)continue;const v=[0,0,0];v[i]=x;v[j]=amt-x;const c=costV(v);if(!split||c.cost<split.cost-0.5)split={v,...c}}}
+      if(split&&!(rank[0]&&split.cost<rank[0].cost-1000))split=null;
+    }
+    return{f,tots,b1,b2,base:6*b1+6*b2,rank,best:rank[0],split};
+  }
+  function rdefFut(){const past=rwin.filter(w=>!w.fut);const s=rst.c.reduce((a,c)=>a+past.reduce((x,w)=>x+(c.v[w.k]||0),0),0);return past.length?s/past.length:0}
+  function rmini(i,ci,t,amt,f){if(ci<0)return"";const lo=ci?RCATS[ci-1][1]*f:0,hi=RCATS[ci][1]*f,w=hi-lo,R=Math.min(rresv()[i],w);
+    const cl=x=>Math.max(0,Math.min(1,x));const u=cl((t-lo)/w),j=cl(Math.min(1-u,amt/w)),rv=cl(R/w);
+    const C=2*Math.PI*30,arc=(a,b,col)=>b>0?`<circle r="30" cx="40" cy="40" fill="none" stroke="${col}" stroke-width="11" stroke-dasharray="${b*C} ${C}" stroke-dashoffset="${-a*C}" transform="rotate(-90 40 40)"/>`:"";
+    const over=(t+amt)>hi;
+    return`<div class="r-mini"><svg viewBox="0 0 80 80"><circle r="30" cx="40" cy="40" fill="none" stroke="var(--soft)" stroke-width="11"/>${arc(1-rv,rv,"light-dark(#efc9c4,#5a2a26)")}${arc(0,u,"light-dark(#9aa19c,#5b6160)")}${arc(u,amt?j:0,over?"var(--bdc)":"var(--rgreen)")}<text x="40" y="38" text-anchor="middle" font-size="18" font-weight="800" fill="currentColor">${RCATS[ci][0]}</text><text x="40" y="52" text-anchor="middle" font-size="10" font-weight="600" fill="var(--mut)">${Math.round(u*100)}%</text></svg></div>`}
+  function rstat(i,t,f){const ci=rcatOf(t,f);if(ci<0)return{k:"badx",t:"Excluido"};
+    const room=RCATS[ci][1]*f-t-rresv()[i];if(ci<7&&room<=0)return{k:"warn",t:"Sin margen"};
+    if(ci>=7)return{k:"badx",t:"Categoría cara"};
+    const width=RCATS[ci][1]*f-(ci?RCATS[ci-1][1]*f:0);
+    if(room<Math.max(2e6,width*.15))return{k:"warn",t:"Cerca del tope"};
+    return{k:"ok",t:"Con margen"}}
+  function rRenderAlerts(tots,f){const A=[];
+    const rVigTxtEl=document.getElementById("rVigTxt");
+    const rNextUpd=()=>{const[y,m]=rst.vig.split("-").map(Number);return new Date(y,m-1+6,1)};
+    const rVigTxt=()=>{const MESL=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];const[y,m]=rst.vig.split("-").map(Number);return MESL[m-1].charAt(0).toUpperCase()+MESL[m-1].slice(1)+" "+y};
+    rst.c.forEach((c,i)=>{const ci=rcatOf(tots[i],f);
+      if(ci<0)A.push(["badx",`<b>${resc(c.n)} supera el tope de la K.</b> Quedaría excluido del monotributo.`]);
+      else if(ci>=7)A.push(["badx",`<b>${resc(c.n)} queda en la ${RCATS[ci][0]} en ${rrecat}</b> (${rfmt(rcuota(ci,c.a,f,c.b))}/mes). Le entran ${rfmt(RCATS[ci][1]*f-tots[i])} más antes de la ${ci<10?RCATS[ci+1][0]:"exclusión"}.`]);
+      else{const room=RCATS[ci][1]*f-tots[i],width=RCATS[ci][1]*f-(ci?RCATS[ci-1][1]*f:0);
+        if(room<=rresv()[i])A.push(["warn",`<b>${resc(c.n)} ya está en su reserva.</b> Le quedan ${rfmt(room)} antes de la ${RCATS[ci+1]?RCATS[ci+1][0]:"K"}: solo para clientes exclusivos.`]);
+        else if(room-rresv()[i]<Math.max(2e6,width*.15))A.push(["warn",`<b>${resc(c.n)} está cerca del tope de la ${RCATS[ci][0]}.</b> Le quedan ${rfmt(room)}.`])}});
+    const end=new Date(RY,rendM+1,0),days=Math.ceil((end-rnow)/864e5);
+    if(days<=45)A.push(["warn",`<b>Faltan ${days} días</b> para que cierre el período de la recategorización de ${rrecat}.`]);
+    {const nu=rNextUpd();if(rnow>=nu)A.push(["badx",`<b>Hay topes nuevos de ARCA.</b> Cargalos en "Topes y cuotas de ARCA".`]);
+    else if((nu-rnow)/864e5<=15)A.push(["warn",`<b>En ${Math.ceil((nu-rnow)/864e5)} días cambian los topes de ARCA.</b>`])}
+    if(rst.est)A.push(["warn","<b>Los montos de facturación son estimados.</b> Cargá los números exactos."]);
+    if(!A.length)A.push(["ok","<b>Todo en orden.</b> Los tres CUIT tienen margen en su categoría."]);
+    const ord={badx:0,warn:1,ok:2};A.sort((a,b)=>ord[a[0]]-ord[b[0]]);
+    $r("rAlerts").innerHTML=A.map(([k,t])=>`<li class="r-${k}"><span class="r-ic"><span>${k=="ok"?"✓":"!"}</span></span><div>${t}</div></li>`).join("");
+    const nb=A.filter(a=>a[0]!="ok").length;$r("rAlertN").className="r-chip r-"+(A[0][0]);$r("rAlertN").textContent=nb?nb+(nb==1?" alerta":" alertas"):"Sin alertas";}
+  function rRenderLog(){
+    $r("rLog").innerHTML=rst.log.length?rst.log.slice().reverse().map((l,ri)=>{const idx=rst.log.length-1-ri;return`<li><span>${resc(l.t)} · <b>${resc(rst.c[l.c].n)}</b> · <span style="${l.m<0?"color:var(--bdc)":""}">${rfmt(l.m)}</span></span><button class="r-ghost" data-u="${idx}" type="button">Deshacer</button></li>`}).join(""):`<li><span class="r-note">Todavía no registraste ninguna factura desde acá.</span></li>`;
+    document.querySelectorAll("#rLog [data-u]").forEach(b=>b.addEventListener("click",()=>{const l=rst.log[+b.dataset.u];const c=rst.c[l.c];c.v[l.k]=Math.max(0,(c.v[l.k]||0)-l.m);rst.log.splice(+b.dataset.u,1);rsave();rBuildGrid();rCalc()}));}
+  function rRegAlloc(v){const k=$r("rJm").value,w=rwin.find(x=>x.k==k),cl=$r("rCli").value.trim();
+    if(cl)rst.cl[rclFind(cl)||cl]=ral.slice();
+    v.forEach((m,i)=>{if(!m)return;const c=rst.c[i];c.v[k]=(c.v[k]||0)+m;rst.log.push({c:i,k,m,t:(w?w.t:k)+(cl?" · "+cl:"")})});rDrawAllow();
+    $r("rAmt").value="";rsave();rBuildGrid();rCalc()}
+  function rParseArca(txt){const L=txt.replace(/^﻿/,"").split(/\r?\n/).filter(x=>x.trim());if(!L.length)return null;
+    const sp=l=>l.split(";").map(x=>x.replace(/^"|"$/g,"").trim());const H=sp(L[0]);
+    const iF=H.findIndex(h=>/Fecha/i.test(h)),iT=H.findIndex(h=>/Tipo de Comprobante/i.test(h)),iI=H.findIndex(h=>/Imp\. Total/i.test(h)),iN=H.findIndex(h=>/Denominaci/i.test(h));
+    if(iF<0||iT<0||iI<0)return null;const m={},cl=new Set();let d0=null,d1=null;
+    for(const l of L.slice(1)){const c=sp(l);if(!c[iF])continue;const d=c[iF];let v=rparse(c[iI]);const t=+c[iT];
+      if([3,8,13,53].includes(t))v=-v;const[y,mo]=d.split("-").map(Number);const k=y+"-"+mo;m[k]=(m[k]||0)+v;
+      if(!d0||d<d0)d0=d;if(!d1||d>d1)d1=d;if(iN>=0&&c[iN])cl.add(c[iN].replace(/\s+/g," ").trim())}
+    return{m,cl:[...cl],d0,d1}}
+  function rImportFiles(files){const out=[];let n=0;
+    [...files].forEach(f=>{const rd=new FileReader();rd.onload=()=>{const P=rParseArca(rd.result);let i=rst.c.findIndex(c=>c.cuit&&f.name.includes(c.cuit));
+      if(!P)out.push(`<li>${resc(f.name)}: no parece un CSV de Mis Comprobantes.</li>`);
+      else if(i<0)out.push(`<li>${resc(f.name)}: no encontré el CUIT en el nombre del archivo.</li>`);
+      else{const c=rst.c[i],ch=[];const[y0,m0]=P.d0.split("-").map(Number);const[y1,m1]=P.d1.split("-").map(Number);
+        rwin.forEach(w=>{const[y,m]=w.k.split("-").map(Number);const a=y*12+m,lo=y0*12+m0,hi=Math.max(y1*12+m1,rnow.getFullYear()*12+rnow.getMonth()+1);
+          if(a<lo||a>hi)return;const nv=Math.round((P.m[w.k]||0)*100)/100,ov=c.v[w.k]||0;if(Math.abs(nv-ov)>0.5)ch.push(`${w.t}: ${rfmt(ov)} → ${rfmt(nv)}`);c.v[w.k]=nv});
+        P.cl.forEach(nm=>{const k=rclFind(nm)||nm.toLowerCase().replace(/(^|[\s.(])\S/g,x=>x.toUpperCase());if(!rst.cl[k])rst.cl[k]=[0,0,0];rst.cl[k][i]=1});
+        out.push(`<li><b>${resc(c.n)}</b>: ${ch.length?ch.length+" mes"+(ch.length>1?"es":"")+" corregido"+(ch.length>1?"s":""):""} ${P.cl.length} clientes.</li>`)}
+      if(++n==files.length){rst.est=0;$r("rEstN").hidden=true;rsave();rBuildGrid();rDrawAllow();rCalc();$r("rImpR").innerHTML=`<ul class="r-s">${out.join("")}</ul>`}};rd.readAsText(f,"utf-8")})}
+  function rncDraw(){const i=+$r("rNcC").value,k=$r("rNcM").value,a=rparse($r("rNcA").value),f=1+(rparse($r("rUpd").value)/100||0);
+    const c=rst.c[i],have=c.v[k]||0,t=rtotOf(c),ok=a>0&&a<=have+0.5;$r("rNcReg").disabled=!ok;const pv=$r("rNcPrev");
+    if(!a){pv.hidden=true;return}pv.hidden=false;
+    if(!ok){pv.style.borderColor="var(--bdc)";pv.innerHTML=`<div class="r-cap" style="color:var(--bdc)">Revisá el monto</div><div style="font-size:14px">${resc(c.n)} tiene ${rfmt(have)} facturados en ese mes.</div>`;return}
+    pv.style.borderColor="";const c0=rcatOf(t,f),c1=rcatOf(t-a,f),q0=rcuota(c0,c.a,f,c.b),q1=rcuota(c1,c.a,f,c.b);
+    pv.innerHTML=`<div class="r-cap">Cómo queda ${resc(c.n)} en ${rrecat}</div><div style="font-size:15px;font-weight:800;margin:4px 0">${rfmt(t)} → ${rfmt(t-a)} · ${c0==c1?"sigue en la "+RCATS[c1][0]:"baja de la "+RCATS[c0][0]+" a la "+RCATS[c1][0]}</div><div style="font-size:13px;color:var(--mut)">${c0==c1?`Le quedan ${rfmt(RCATS[c1][1]*f-(t-a))} antes de subir.`:`La cuota baja ${rfmt(q0-q1)} por mes.`}</div>`}
+  function rDrawTopes(){
+    const RMESL=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+    const rVigTxt=()=>{const[y,m]=rst.vig.split("-").map(Number);return RMESL[m-1].charAt(0).toUpperCase()+RMESL[m-1].slice(1)+" "+y};
+    const rNextUpd=()=>{const[y,m]=rst.vig.split("-").map(Number);return new Date(y,m-1+6,1)};
+    const opts=[];for(let y=2026;y<=2029;y++)for(const m of[2,8]){if(y==2026&&m==2)continue;opts.push(`${y}-${m}`)}
+    $r("rVigM").innerHTML=opts.map(o=>{const[y,m]=o.split("-");return`<option value="${o}" ${o==rst.vig?"selected":""}>${RMESL[+m-1]} ${y}</option>`}).join("");
+    $r("rTopB").innerHTML=RCATS.map((c,i)=>`<tr><td><b>${c[0]}</b></td>${[1,2,3].map(k=>`<td><input class="r-num" data-ti="${i}" data-tk="${k}" inputmode="decimal" value="${c[k].toLocaleString("es-AR",{minimumFractionDigits:2,maximumFractionDigits:2})}"></td>`).join("")}</tr>`).join("");
+    document.querySelectorAll("#rTopB [data-ti]").forEach(el=>el.addEventListener("change",()=>{const v=rparse(el.value);if(v>0){RCATS[+el.dataset.ti][+el.dataset.tk]=v;rst.cats=RCATS.map(x=>x.slice());rsave();rCalc()}}));
+    const mt=document.getElementById("rVigTxt");if(mt)mt.textContent=rVigTxt();
+    const late=rnow>=rNextUpd();$r("rTopChip").className="r-chip r-"+(late?"badx":"ok");$r("rTopChip").textContent=late?"Actualizar":rVigTxt();
+  }
+  function rCalc(){
+    const amt=rparse($r("rAmt").value);
+    const E=revalAll(amt),f=E.f,tots=E.tots,rank=E.rank,best=E.best;
+    $r("rFut").placeholder=rshow(rdefFut());
+    $r("rH1").textContent="Queda en";$r("rH2").textContent="Cuotas "+rper1;$r("rH3").textContent=rper2+" (est.)";
+    $r("rGf").innerHTML=`<tr><th>Total ventana</th>${tots.map((t,i)=>{const ci=rcatOf(t,f);return`<th style="text-align:right">${rfmt(t)}<br><span class="r-lbl">${ci<0?"excluido":"categoría "+RCATS[ci][0]}</span></th>`}).join("")}</tr>`;
+    $r("rBaseLine").textContent=`Sin este trabajo: ${isFinite(E.b1)?rfmt(E.b1):"—"} por mes en ${rper1} y unos ${isFinite(E.b2)?rfmt(E.b2):"—"} por mes en ${rper2}.`;
+    const sr=$r("rSumRows"),row=(k,v)=>`<div class="r-rw"><span>${k}</span><span>${v}</span></div>`;
+    const empty=(n,t)=>{$r("rVName").textContent=n;sr.innerHTML="";$r("rVCost").innerHTML="";$r("rVWhy").textContent=t;$r("rReg").disabled=true;$r("rReg").textContent="Registrar factura";$r("rReg2").hidden=true};
+    if(amt&&!best)empty("Elegí un CUIT","Marcá con qué CUIT se puede facturar a este cliente.");
+    else if(!amt)empty("—","Poné el monto del trabajo para ver la recomendación.");
+    else if(!isFinite(best.cost))empty("Ninguno entra","Con cualquiera de los tres se pasan de los topes.");
+    else{
+      const c=rst.c[best.i],second=rank[1];
+      const tie=second&&isFinite(second.costR)&&Math.abs(second.costR-best.costR)<1000&&second.room>=0;
+      $r("rVName").textContent=tie?`${c.n} o ${rst.c[second.i].n}`:c.n;
+      $r("rReg").textContent="Registrar con "+c.n;$r("rReg2").hidden=!tie;if(tie){$r("rReg2").textContent="Registrar con "+rst.c[second.i].n;$r("rReg2").dataset.i=second.i}
+      const d1=best.m1r-E.b1,d2=best.m2r-E.b2;
+      const ci0=rcatOf(tots[best.i],f),yr=rendM==11?RY+1:RY;
+      const yy=n=>"'"+String(n).slice(2),p1=rendM==11?`Cuotas feb–jul ${yy(yr)}`:`Cuotas ago ${yy(yr)}–ene ${yy(yr+1)}`,p2=rendM==11?`Cuotas ago ${yy(yr)}–ene ${yy(yr+1)}`:`Cuotas feb–jul ${yy(yr+1)}`;
+      const pv2=x=>x>0.5?`+${rfmt(x)}/mes`:"Sin cambios";
+      sr.innerHTML=row(`Categoría en ${rrecat}`,ci0==best.ci?`Sigue en ${RCATS[best.ci][0]}`:`${ci0<0?"—":RCATS[ci0][0]} → ${RCATS[best.ci][0]}`)+row(p1,pv2(d1))+row(p2+" (est.)",pv2(d2));
+      const sv=second&&isFinite(second.costR)?second.costR-best.costR:null;
+      if(tie){$r("rVCost").innerHTML=`<div class="r-total"><span class="r-cap">Frente a la otra opción</span><b style="font-size:22px">Da lo mismo</b></div>`;$r("rVWhy").textContent=`Con ${c.n} o con ${rst.c[second.i].n} pagan exactamente lo mismo.`}
+      else if(sv!=null&&sv>0.5){$r("rVCost").innerHTML=`<div class="r-total"><span class="r-cap">Te ahorrás en el año</span><b><em style="color:var(--okc)">$</em> ${Math.round(sv).toLocaleString("es-AR")}</b></div>`;$r("rVWhy").textContent=`Es lo que pagarían de más si lo facturás con ${rst.c[second.i].n}.`}
+      else if(sv!=null&&second&&second.room<0){$r("rVCost").innerHTML="";$r("rVWhy").textContent=`Con ${rst.c[second.i].n} costaría lo mismo, pero usaría su reserva.`}
+      else{$r("rVCost").innerHTML="";$r("rVWhy").textContent=ral.filter(Boolean).length==1?"Es el único CUIT habilitado para este cliente.":""}
+      $r("rReg").disabled=false;
+    }
+    {const v=$r("rVSev");v.hidden=true;$r("rVName").style.color="";
+      if(amt&&best&&isFinite(best.cost)){const ci0=rcatOf(tots[best.i],f),jump=best.ci-ci0;
+        const k=(best.ci>=7&&jump>0)||jump>=2?"badx":(best.m1r-E.b1)>0.5?"warn":"ok";
+        v.className="r-sev r-"+k;v.hidden=false;
+        v.textContent=k=="ok"?`✓ No cambia ninguna cuota hasta ${rendM==11?"julio "+(RY+1):"enero "+(RY+1)}`:k=="warn"?`Las cuotas suben ${rfmt(best.m1r-E.b1)} por mes desde ${rendM==11?"febrero":"agosto"}`:`Atención: ${resc(rst.c[best.i].n)} salta ${jump} categoría${jump>1?"s":""} (${RCATS[ci0]?RCATS[ci0][0]:"—"} → ${RCATS[best.ci][0]})`;
+      }}
+    const S=E.split;$r("rVSplit").hidden=!(amt&&S);$r("rVCap").textContent=amt&&S?"Si lo facturás todo con un solo CUIT":"Facturalo con";$r("rRegS").hidden=!(amt&&S);
+    const nAl=ral.filter(Boolean).length;$r("rCliN").textContent=nAl==1&&amt&&best?`Como solo se puede facturar con ${rst.c[best.i].n}, no hay otra opción para comparar.`:"";
+    if(amt&&S){const parts=S.v.map((x,i)=>x?`${resc(rst.c[i].n)} ${rfmt(x)}`:null).filter(Boolean);
+      $r("rSTxt").innerHTML=parts.join(" + ");$r("rSWhy").textContent=best.costR-S.costR>0.5?`Ahorran ${rfmt(best.costR-S.costR)} en el año frente a facturar todo con ${rst.c[best.i].n}.`:`Cuesta casi lo mismo, pero no toca la reserva de nadie.`;}
+    $r("rCmp").innerHTML=rank.map(o=>`<tr class="${amt&&o===best&&isFinite(o.cost)?"r-best":""}"><td>${resc(rst.c[o.i].n)}${o.room<0&&isFinite(o.cost)?'<br><span class="r-chip r-warn">usa reserva</span>':""}</td><td>${o.ci<0?'<span class="r-bad">Excluido</span>':RCATS[o.ci][0]}</td><td>${isFinite(o.m1r)?rfmt(o.m1r)+"/mes":"—"}</td><td>${isFinite(o.m2r)?rfmt(o.m2r)+"/mes":"—"}</td><td>${isFinite(o.costR)?rfmt(o.costR):"—"}</td><td style="color:${!isFinite(o.costR)?"":o.costR-E.base<=0.5?"var(--okc)":o.costR-E.base<1e6?"var(--wnc)":"var(--bdc)"};font-weight:700">${isFinite(o.costR)?(o.costR-E.base>0?"+":"")+rfmt(o.costR-E.base):"—"}</td></tr>`).join("");
+    const SMAX=RCATS[10][1]*f*1.04;
+    $r("rGauges").innerHTML=rst.c.map((c,i)=>{
+      const ci=rcatOf(tots[i],f);let prev=0;
+      const segs=RCATS.map(k=>{const w=(k[1]*f-prev)/SMAX*100;prev=k[1]*f;return`<div class="r-seg" style="width:${w}%">${k[0]}</div>`}).join("");
+      const u=Math.min(tots[i],SMAX)/SMAX*100,j=Math.min(tots[i]+amt,SMAX)/SMAX*100-u;
+      const st_=rstat(i,tots[i],f);
+      return`<div class="r-g ${amt&&best&&best.i==i&&isFinite(best.cost)?"r-win":""}"><div class="r-gh"><div class="r-badge r-${st_.k}">${ci<0?"×":RCATS[ci][0]}</div><div class="r-who2"><b>${resc(c.n)} <i class="r-chip r-${st_.k}">${st_.t}</i></b><span>${ci<0?"Excluido del régimen":(()=>{const rm=RCATS[ci][1]*f-tots[i]-rresv()[i];return rm>0?`Le entran <strong>${rfmt(rm)}</strong> sin subir ni tocar la reserva`:`<strong style="color:var(--bdc)">En su reserva:</strong> le quedan ${rfmt(Math.max(0,RCATS[ci][1]*f-tots[i]))}`})()}${ci>=0&&ci<10?` · luego ${RCATS[ci+1][0]} (+${rfmt(rcuota(ci+1,c.a,f,c.b)-rcuota(ci,c.a,f,c.b))}/mes)`:""}</span></div></div><div class="r-track"><div class="r-fillU" style="width:${u}%"></div><div class="r-fillJ" style="left:${u}%;width:${amt?j:0}%"></div>${segs}</div>${rmini(i,ci,tots[i],amt,f)}</div>`;
+    }).join("");
+    rRenderLog();rRenderAlerts(tots,f);
+  }
+  window.rCalc=rCalc;
+  // ---- Setup estático (una sola vez) ----
+  $r("rJm").innerHTML=rwin.map((w)=>`<option value="${w.k}" ${w.k==RY+"-"+(RM+1)?"selected":""}>${w.t}${w.k==RY+"-"+(RM+1)?" (este mes)":""}</option>`).join("");
+  $r("rSub").textContent=`La recategorización de ${rrecat} toma lo facturado de ${rwin[0].t} a ${rwin[11].t}.`;
+  $r("rMRec").textContent=rrecat.charAt(0).toUpperCase()+rrecat.slice(1);
+  $r("rNcC").innerHTML=rst.c.map((c,i)=>`<option value="${i}">${resc(c.n)}</option>`).join("");
+  $r("rNcM").innerHTML=$r("rJm").innerHTML;
+  ["rNcC","rNcM"].forEach(id=>$r(id).addEventListener("change",rncDraw));
+  $r("rNcA").addEventListener("input",rncDraw);
+  $r("rNcA").addEventListener("blur",()=>{const n=rparse($r("rNcA").value);$r("rNcA").value=rshow(n)});
+  $r("rNcReg").addEventListener("click",()=>{const i=+$r("rNcC").value,k=$r("rNcM").value,a=rparse($r("rNcA").value),c=rst.c[i];if(!(a>0&&a<=(c.v[k]||0)+0.5))return;
+    c.v[k]=(c.v[k]||0)-a;const w=rwin.find(x=>x.k==k),tx=$r("rNcT").value.trim();rst.log.push({c:i,k,m:-a,t:(w?w.t:k)+" · Nota de crédito"+(tx?" · "+tx:"")});
+    $r("rNcA").value="";$r("rNcT").value="";rsave();rBuildGrid();rCalc();rncDraw()});
+  $r("rReg2").addEventListener("click",()=>{const amt=rparse($r("rAmt").value);if(!amt)return;const v=[0,0,0];v[+$r("rReg2").dataset.i]=amt;rRegAlloc(v)});
+  $r("rReg").addEventListener("click",()=>{const amt=rparse($r("rAmt").value);if(!amt)return;const b=revalAll(amt).best;if(!b||!isFinite(b.cost))return;const v=[0,0,0];v[b.i]=amt;rRegAlloc(v)});
+  $r("rRegS").addEventListener("click",()=>{const amt=rparse($r("rAmt").value);if(!amt)return;const S=revalAll(amt).split;if(S)rRegAlloc(S.v)});
+  $r("rAmt").addEventListener("input",rCalc);
+  $r("rCli").addEventListener("input",()=>{const k=rclFind($r("rCli").value),m=k&&rst.cl[k];if(m){ral=m.slice();rDrawAllow();rCalc()}});
+  $r("rAmt").addEventListener("blur",()=>{const n=rparse($r("rAmt").value);$r("rAmt").value=rshow(n)});
+  $r("rUpd").addEventListener("input",()=>{rst.upd=rparse($r("rUpd").value);rsave();rCalc()});
+  $r("rFut").addEventListener("input",()=>{rst.fut=rparse($r("rFut").value);rsave();rCalc()});
+  {const dz=document.querySelector("#rImpCard .r-drop");if(dz){["dragenter","dragover"].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.add("over")}));["dragleave","drop"].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.remove("over")}));dz.addEventListener("drop",e=>{if(e.dataTransfer.files.length)rImportFiles(e.dataTransfer.files)})}}
+  $r("rImpF").addEventListener("change",e=>{if(e.target.files.length)rImportFiles(e.target.files);e.target.value=""});
+  $r("rVigM").addEventListener("change",()=>{rst.vig=$r("rVigM").value;rsave();rDrawTopes();rCalc()});
+  $r("rTopReset").addEventListener("click",()=>{RCATS0.forEach((x,i)=>{RCATS[i][1]=x[1];RCATS[i][2]=x[2];RCATS[i][3]=x[3]});delete rst.cats;rst.vig="2026-8";rsave();rDrawTopes();rCalc()});
+  document.querySelectorAll("#tab-repartidor .r-card>.r-ch").forEach(h=>{
+    const c=h.parentElement;
+    h.setAttribute("role","button");h.tabIndex=0;
+    const tg=()=>{const on=c.classList.toggle("r-col");if(!rst.colp)rst.colp={};rst.colp[c.id]=on?1:0;h.setAttribute("aria-expanded",String(!on));rsave()};
+    h.addEventListener("click",tg);h.addEventListener("keydown",e=>{if(e.key=="Enter"||e.key==" "){e.preventDefault();tg()}});
+  });
+  // ---- Firebase sync ----
+  cloudDocRef(REPARTIDOR_KEY).onSnapshot(snap=>{
+    const d=snap.exists&&snap.data();
+    if(d&&d.c&&d.c.length==3)Object.assign(rst,d);
+    rApplyFixes();
+    rCloudLoaded=true;
+    $r("rUpd").value=rst.upd?String(rst.upd).replace(".",","):"";
+    $r("rFut").value=rst.fut?rshow(rst.fut):"";
+    $r("rEstN").hidden=!rst.est;
+    document.querySelectorAll("#tab-repartidor .r-card>.r-ch").forEach(h=>{
+      const c=h.parentElement;const on=rst.colp&&rst.colp[c.id];
+      if(on)c.classList.add("r-col");else c.classList.remove("r-col");
+      h.setAttribute("aria-expanded",String(!on));
+    });
+    rDrawTopes();rDrawAllow();rBuildGrid();rCalc();
+  },e=>{
+    console.error('[Repartidor] Firestore error:',e);
+    rApplyFixes();rCloudLoaded=true;
+    rDrawTopes();rDrawAllow();rBuildGrid();rCalc();
+  });
+  }
+
   const ALLOWED_EMAIL = 'joni@vach.com.ar';
   const ALLOWED_EMAILS = ['joni@vach.com.ar', 'julisaid00@gmail.com'];
   auth.onAuthStateChanged(user => {
