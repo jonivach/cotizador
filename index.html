@@ -1208,7 +1208,7 @@
     <!-- Stats -->
     <div class="ov-stats-row">
       <div class="ov-stat">
-        <div class="ov-stat-label">Proyectos</div>
+        <div class="ov-stat-label">Proyectos activos / del mes</div>
         <div class="ov-stat-val" id="ovProyActivos">0</div>
         <div class="ov-stat-sub" id="ovProyActivosSub">este mes</div>
       </div>
@@ -1350,12 +1350,17 @@
       <div class="stat"><div class="lbl">Total aprobados</div><div class="val" id="aprobCount">0</div></div>
       <div class="stat" style="border-left:2px solid var(--cyan);"><div class="lbl" id="statMesLbl">Facturado este mes</div><div class="val" id="statFacturadoMes">$ 0</div></div>
     </div>
-    <div id="aprobEstadoFilterBtns" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;">
-      <button class="filter-btn active" data-estado="todos">Todos</button>
-      <button class="filter-btn" data-estado="en-curso">🟡 En curso</button>
-      <button class="filter-btn" data-estado="entregado-nc">🟠 Entregado / no cobrado</button>
-      <button class="filter-btn" data-estado="no-ent-cob">🟣 No entregado / cobrado</button>
-      <button class="filter-btn" data-estado="completado">🟢 Completado</button>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px;">
+      <div id="aprobEstadoFilterBtns" style="display:flex;gap:6px;flex-wrap:wrap;">
+        <button class="filter-btn active" data-estado="todos">Todos</button>
+        <button class="filter-btn" data-estado="en-curso">🟡 En curso</button>
+        <button class="filter-btn" data-estado="entregado-nc">🟠 Entregado / no cobrado</button>
+        <button class="filter-btn" data-estado="no-ent-cob">🟣 No entregado / cobrado</button>
+        <button class="filter-btn" data-estado="completado">🟢 Completado</button>
+      </div>
+      <select id="aprobMesFiltro" class="filter-select" style="font-size:12px;padding:4px 8px;">
+        <option value="">Todos los meses</option>
+      </select>
     </div>
     <div id="aprobadosWrap"></div>
   </div>
@@ -1825,6 +1830,7 @@
   let cotizFilter = 'todas'; // 'todas' | 'aprobadas' | 'pendientes'
   let cotizMesFilter = ''; // 'YYYY-MM' o ''
   let aprobEstadoFilter = 'todos'; // 'todos' | 'en-curso' | 'entregado-nc' | 'no-ent-cob' | 'completado'
+  let aprobMesFilter = ''; // '' = todos, 'YYYY-MM' para filtrar por mes
   let hasUnsavedChanges = false;
   window.addEventListener('beforeunload', e => {
     if(hasUnsavedChanges){ e.preventDefault(); e.returnValue = ''; }
@@ -2596,8 +2602,18 @@
       if(d !== 0) return d;
       return (b.num||'').localeCompare(a.num||'');
     });
+    // Poblar select de meses con los disponibles
+    const sel = $('aprobMesFiltro');
+    if(sel){
+      const mesesDisp = [...new Set(aprobados.map(c=>(c.fechaAprobacion||'').slice(0,7)).filter(Boolean))].sort().reverse();
+      const nomMeses = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+      const fmtMes = k => { const [y,m]=k.split('-'); return `${nomMeses[parseInt(m)-1]} ${y}`; };
+      const cur = sel.value;
+      sel.innerHTML = `<option value="">Todos los meses</option>` + mesesDisp.map(k=>`<option value="${k}"${k===cur?' selected':''}>${fmtMes(k)}</option>`).join('');
+    }
     const byEstado = aprobEstadoFilter === 'todos' ? aprobados : aprobados.filter(c => (c.estadoProyecto||'en-curso') === aprobEstadoFilter);
-    const filtered = q ? byEstado.filter(c =>
+    const byMes = aprobMesFilter ? byEstado.filter(c => (c.fechaAprobacion||'').startsWith(aprobMesFilter)) : byEstado;
+    const filtered = q ? byMes.filter(c =>
       (c.num||'').toLowerCase().includes(q) ||
       (c.agencia||'').toLowerCase().includes(q) ||
       (c.numFactura||'').toLowerCase().includes(q) ||
@@ -2840,6 +2856,7 @@
   }
 
   $('searchAprobados') && $('searchAprobados').addEventListener('input', renderAprobados);
+  $('aprobMesFiltro') && $('aprobMesFiltro').addEventListener('change', e => { aprobMesFilter = e.target.value; renderAprobados(); });
 
   $('aprobEstadoFilterBtns') && $('aprobEstadoFilterBtns').addEventListener('click', e => {
     const btn = e.target.closest('.filter-btn');
@@ -3499,9 +3516,9 @@
 
     // Proyectos del mes actual
     const mesActual = todayStr.slice(0,7);
-    const activos = aprobadas.filter(c => (c.estadoProyecto||'en-curso') !== 'completado');
     const proySemMes = aprobadas.filter(c => { const f = c.fechaAprobacion||c.fecha||''; return f.startsWith(mesActual); });
-    document.getElementById('ovProyActivos').textContent = proySemMes.length;
+    const proySemMesActivos = proySemMes.filter(c => (c.estadoProyecto||'en-curso') !== 'completado');
+    document.getElementById('ovProyActivos').textContent = proySemMesActivos.length + ' / ' + proySemMes.length;
     document.getElementById('ovProyActivosSub').textContent = now.toLocaleString('es-AR',{month:'long',year:'numeric'});
 
     // Facturado este mes
