@@ -882,10 +882,20 @@
   #tab-repartidor .rep-meta .r-lbl{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);font-weight:600;}
   #tab-repartidor .rep-meta strong{font-weight:600;font-size:14px;}
   #tab-repartidor .rep-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,360px);gap:20px;padding:20px 20px 60px;align-items:start;}
-  @media(max-width:900px){#tab-repartidor .rep-layout{grid-template-columns:1fr;}}
   #tab-repartidor .rep-main{display:grid;gap:16px;}
   #tab-repartidor .rep-side{position:sticky;top:130px;}
-  @media(max-width:900px){#tab-repartidor .rep-side{position:static;}}
+  @media(max-width:900px){
+    /* Reorder: Calculadora → Resumen → resto */
+    #tab-repartidor .rep-layout{display:flex;flex-direction:column;gap:16px;}
+    #tab-repartidor .rep-main{display:contents;}
+    #rCalcCard{order:1;}
+    #tab-repartidor .rep-side{order:2;position:static;}
+    #tab-repartidor .rep-main>section:not(#rCalcCard){order:3;}
+    /* Calculadora compacta: monto + mes en la misma fila */
+    #rCalcCard .r-fields.f2{grid-template-columns:repeat(2,minmax(0,1fr));}
+    #rCalcCard .r-cb{padding:14px 16px;}
+    #rCalcCard .r-ch{padding:12px 16px;}
+  }
   @media(max-width:600px){
     #tab-repartidor .r-cb{padding:20px;}
     #tab-repartidor .rep-side .r-cb{padding:20px;}
@@ -916,7 +926,7 @@
   /* fields */
   #tab-repartidor .r-fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;}
   #tab-repartidor .r-fields.f2{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start;}
-  @media(max-width:600px){#tab-repartidor .r-fields.f2{grid-template-columns:1fr;}}
+  @media(max-width:600px){#tab-repartidor .r-fields.f2:not(#rCalcCard .r-fields){grid-template-columns:1fr;}}
   #tab-repartidor .r-fields label{display:block;margin-bottom:5px;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);font-weight:600;}
   #tab-repartidor select, #tab-repartidor input:not([type=checkbox]){font-family:Manrope,sans-serif;font-size:15px;color:var(--ink);min-height:44px;width:100%;background:var(--card);border:1px solid var(--field);border-radius:10px;padding:0 14px;box-sizing:border-box;}
   #tab-repartidor select{-webkit-appearance:none;appearance:none;padding-right:32px;background-image:linear-gradient(45deg,transparent 50%,var(--mut) 50%),linear-gradient(135deg,var(--mut) 50%,transparent 50%);background-position:right 16px center,right 11px center;background-size:5px 5px;background-repeat:no-repeat;}
