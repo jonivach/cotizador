@@ -2605,14 +2605,17 @@
     // Poblar select de meses con los disponibles
     const sel = $('aprobMesFiltro');
     if(sel){
-      const mesesDisp = [...new Set(aprobados.map(c=>(c.fechaAprobacion||c.fechaEmision||'').slice(0,7)).filter(Boolean))].sort().reverse();
+      const todosAprob = cotizaciones.filter(c => c.estado === 'aprobada');
+      const fechaRef = c => c.fechaAprobacion || c.fechaEmision || (c.entregas&&c.entregas[0]&&c.entregas[0].fecha) || (c.pagos&&c.pagos[0]&&c.pagos[0].fecha) || '';
+      const mesesDisp = [...new Set(todosAprob.map(c=>fechaRef(c).slice(0,7)).filter(Boolean))].sort().reverse();
       const nomMeses = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
       const fmtMes = k => { const [y,m]=k.split('-'); return `${nomMeses[parseInt(m)-1]} ${y}`; };
-      const cur = sel.value;
-      sel.innerHTML = `<option value="">Todos los meses</option>` + mesesDisp.map(k=>`<option value="${k}"${k===cur?' selected':''}>${fmtMes(k)}</option>`).join('');
+      sel.innerHTML = `<option value="">Todos los meses</option>` + mesesDisp.map(k=>`<option value="${k}">${fmtMes(k)}</option>`).join('');
+      sel.value = aprobMesFilter;
     }
     const byEstado = aprobEstadoFilter === 'todos' ? aprobados : aprobados.filter(c => (c.estadoProyecto||'en-curso') === aprobEstadoFilter);
-    const byMes = aprobMesFilter ? byEstado.filter(c => (c.fechaAprobacion||c.fechaEmision||'').startsWith(aprobMesFilter)) : byEstado;
+    const fechaRefC = c => c.fechaAprobacion || c.fechaEmision || (c.entregas&&c.entregas[0]&&c.entregas[0].fecha) || (c.pagos&&c.pagos[0]&&c.pagos[0].fecha) || '';
+    const byMes = aprobMesFilter ? byEstado.filter(c => fechaRefC(c).startsWith(aprobMesFilter)) : byEstado;
     const filtered = q ? byMes.filter(c =>
       (c.num||'').toLowerCase().includes(q) ||
       (c.agencia||'').toLowerCase().includes(q) ||
