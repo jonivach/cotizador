@@ -3378,6 +3378,11 @@
   const HIST_JOBS_2026    = [10,6,25,12,13,9,3,12,13,0,0,0];
   // Mes a partir del cual usamos Firestore para 2026 (octubre = índice 9)
   const HIST_2026_CUTOFF  = 9;
+  // Compras históricas (suma de los 3 CUIT por mes, fuente: ARCA)
+  const HIST_PURCHASES_2025 = [0,0,0,0,0,0,0,0,7661990,2189555,2321753,2049255];
+  const HIST_PURCHASES_2026 = [1041639,1251189,2192116,1857405,1880346,1233566,10840732,1135158,1090706,1965389,0,0];
+  // Mes a partir del cual completamos compras 2026 desde rst (noviembre = índice 10)
+  const HIST_2026_PURCH_CUTOFF = 10;
 
   function ovSelectYear(y){
     _ovSelectedYear = y;
@@ -3436,18 +3441,25 @@
     document.getElementById('ovChartYear').textContent = year;
     document.getElementById('ovTotalAnio').textContent = fmtPesos(totalAnio);
     document.getElementById('ovTotalProyAnio').textContent = totalProyAnio;
-    // Compras desde rst.c[i].p para el año seleccionado y el año anterior
-    const purchases = Array(12).fill(0);
-    const prevPurchases = year === 2026 ? Array(12).fill(0) : null;
-    const prevBilling = year === 2026 ? HIST_BILLING_2025.slice() : null;
-    if(typeof rst !== 'undefined' && rst && rst.c){
-      rst.c.forEach(c=>{
-        if(!c.p) return;
-        for(let mi=0;mi<12;mi++){
-          purchases[mi] += c.p[year+'-'+(mi+1)] || 0;
-          if(prevPurchases) prevPurchases[mi] += c.p[(year-1)+'-'+(mi+1)] || 0;
-        }
-      });
+    // Compras: arrays históricos + rst para meses recientes (igual que billing)
+    let purchases, prevPurchases, prevBilling;
+    if(year === 2025){
+      purchases = HIST_PURCHASES_2025.slice();
+      prevPurchases = null; prevBilling = null;
+    } else if(year === 2026){
+      purchases = HIST_PURCHASES_2026.slice();
+      // Nov-Dic 2026: completar desde rst si ya cargó Firebase
+      try{
+        if(rst && rst.c) rst.c.forEach(c=>{
+          if(!c.p) return;
+          for(let mi=HIST_2026_PURCH_CUTOFF;mi<12;mi++) purchases[mi]+=(c.p['2026-'+(mi+1)]||0);
+        });
+      }catch(e){}
+      prevPurchases = HIST_PURCHASES_2025.slice();
+      prevBilling = HIST_BILLING_2025.slice();
+    } else {
+      purchases = Array(12).fill(0);
+      prevPurchases = null; prevBilling = null;
     }
     // Para 2025 no hay "mes actual" resaltado
     ovDrawChart(billing, jobsCount, year === curYear ? month : -1, purchases, prevBilling, prevPurchases);
