@@ -1205,9 +1205,9 @@
     <!-- Stats -->
     <div class="ov-stats-row">
       <div class="ov-stat">
-        <div class="ov-stat-label">Proyectos activos</div>
+        <div class="ov-stat-label">Proyectos</div>
         <div class="ov-stat-val" id="ovProyActivos">0</div>
-        <div class="ov-stat-sub" id="ovProyActivosSub">de 0 totales</div>
+        <div class="ov-stat-sub" id="ovProyActivosSub">este mes</div>
       </div>
       <div class="ov-stat">
         <div class="ov-stat-label">Facturado</div>
@@ -3469,10 +3469,12 @@
     document.getElementById('ovPendProv').textContent = fmtPesos(pendProvTotal);
     document.getElementById('ovPendProvNames').textContent = pendProvNames.slice(0,4).join(' · ') || '—';
 
-    // Proyectos activos (no completado)
+    // Proyectos del mes actual
+    const mesActual = todayStr.slice(0,7);
     const activos = aprobadas.filter(c => (c.estadoProyecto||'en-curso') !== 'completado');
-    document.getElementById('ovProyActivos').textContent = activos.length;
-    document.getElementById('ovProyActivosSub').textContent = `de ${aprobadas.length} totales`;
+    const proySemMes = aprobadas.filter(c => { const f = c.fechaAprobacion||c.fecha||''; return f.startsWith(mesActual); });
+    document.getElementById('ovProyActivos').textContent = proySemMes.length;
+    document.getElementById('ovProyActivosSub').textContent = now.toLocaleString('es-AR',{month:'long',year:'numeric'});
 
     // Facturado este mes
     const facturadoMes = aprobadas
@@ -5776,6 +5778,7 @@
       for(const[n,m]of Object.entries(CL0))if(!rst.cl[n])rst.cl[n]=m;rst.clp=1}
     if(!rst.fix1){const fx=(i,k,o,n)=>{if(rst.c[i]&&rst.c[i].v[k]===o)rst.c[i].v[k]=n};
       fx(1,"2026-1",208000,108000);fx(1,"2026-11",5440000,6457000);fx(2,"2026-3",13725000,14325000);fx(2,"2026-4",8325000,7725000);rst.fix1=1}
+    if(!rst.fix2){[[0,"2025-12",0],[1,"2025-12",200000],[2,"2025-12",7491500]].forEach(([i,k,v])=>{if(rst.c[i]&&rst.c[i].v[k]==null)rst.c[i].v[k]=v});rst.fix2=1}
     if(!rst.colp)rst.colp={rCmpCard:1,rFactCard:1,rLogCard:1,rHowCard:1,rTopCard:1,rNcCard:1,rImpCard:1};
     if(!rst.vig)rst.vig="2026-8";
     if(rst.cats&&rst.cats.length==11)rst.cats.forEach((x,i)=>{RCATS[i][1]=+x[1]||RCATS[i][1];RCATS[i][2]=+x[2]||RCATS[i][2];RCATS[i][3]=+x[3]||RCATS[i][3]});
@@ -5809,6 +5812,10 @@
           if(c0-fixed[0]+c1-fixed[1]+c2-fixed[2]<F)continue;const k=k1+rcuota(z,rst.c[2].a,f,rst.c[2].b);if(k<best)best=k;break}}}
     return best}
   function rresv(){if(!rst.res)rst.res=[2e6,2e6,2e6];return rst.res.map(x=>+x||0)}
+  const rmk2=(y,m)=>{const d=new Date(y,m-1,1);return d.getFullYear()+"-"+(d.getMonth()+1)};
+  function rroll12(i,endK,extra){const[y,m]=endK.split("-").map(Number);let s=extra||0;for(let k=0;k<12;k++)s+=rst.c[i].v[rmk2(y,m-k)]||0;return s}
+  const rkTop=()=>RCATS[10][1];
+  const rcurK=()=>rnow.getFullYear()+"-"+(rnow.getMonth()+1);
   function revalAll(amt){
     const f=1+(rparse($r("rUpd").value)/100||0);
     const F=6*(rparse($r("rFut").value)||rdefFut());
@@ -5823,11 +5830,13 @@
       const m1=base1.reduce((s,b,j)=>s+(j==i?rcuota(cr,c.a,f,c.b):b),0);
       const m2=restNext(fix2.map((x,j)=>j==i&&inW2?x+amt+R[i]:x),F,f);
       const room=ci<0?-Infinity:RCATS[ci][1]*f-t-R[i];
+      const jk=$r("rJm").value,r12=rroll12(i,jk,amt),exc=r12>rkTop();
       const m1r=base1.reduce((s,b,j)=>s+(j==i?rcuota(ci,c.a,f,c.b):b),0),m2r=R[i]?restNext(fix2.map((x,j)=>j==i&&inW2?x+amt:x),F,f):m2;
-      return{i,t,ci,m1,m2,cost:6*m1+6*m2,room,m1r,m2r,costR:6*m1r+6*m2r};
+      if(exc)return{i,t,ci:-1,m1:Infinity,m2:Infinity,cost:Infinity,room:-Infinity,m1r:Infinity,m2r:Infinity,costR:Infinity,r12,exc};
+      return{i,t,ci,m1,m2,cost:6*m1+6*m2,room,m1r,m2r,costR:6*m1r+6*m2r,r12};
     });
     const rank=opts.filter(o=>ral[o.i]).sort((x,y)=>x.cost-y.cost||x.room-y.room);
-    const costV=v=>{let m1=0;for(let i=0;i<3;i++)m1+=rcuota(rcatOf(tots[i]+v[i]+(v[i]?R[i]:0),f),rst.c[i].a,f,rst.c[i].b);const m2=restNext(fix2.map((x,i)=>inW2?x+v[i]+(v[i]?R[i]:0):x),F,f);let m1r=0;for(let i=0;i<3;i++)m1r+=rcuota(rcatOf(tots[i]+v[i],f),rst.c[i].a,f,rst.c[i].b);const m2r=restNext(fix2.map((x,i)=>inW2?x+v[i]:x),F,f);return{m1,m2,cost:6*m1+6*m2,costR:6*m1r+6*m2r}};
+    const costV=v=>{const jk=$r("rJm").value;if(v.some((x,i)=>x&&rroll12(i,jk,x)>rkTop()))return{cost:Infinity,costR:Infinity};let m1=0;for(let i=0;i<3;i++)m1+=rcuota(rcatOf(tots[i]+v[i]+(v[i]?R[i]:0),f),rst.c[i].a,f,rst.c[i].b);const m2=restNext(fix2.map((x,i)=>inW2?x+v[i]+(v[i]?R[i]:0):x),F,f);let m1r=0;for(let i=0;i<3;i++)m1r+=rcuota(rcatOf(tots[i]+v[i],f),rst.c[i].a,f,rst.c[i].b);const m2r=restNext(fix2.map((x,i)=>inW2?x+v[i]:x),F,f);return{m1,m2,cost:6*m1+6*m2,costR:6*m1r+6*m2r}};
     let split=null;
     if(amt>=200000){
       for(let i=0;i<3;i++)for(let j=0;j<3;j++){if(i>=j||!ral[i]||!ral[j])continue;
@@ -5862,6 +5871,9 @@
         else if(room-rresv()[i]<Math.max(2e6,width*.15))A.push(["warn",`<b>${resc(c.n)} está cerca del tope de la ${RCATS[ci][0]}.</b> Le quedan ${rfmt(room)}.`])}});
     const end=new Date(RY,rendM+1,0),days=Math.ceil((end-rnow)/864e5);
     if(days<=45)A.push(["warn",`<b>Faltan ${days} días</b> para que cierre el período de la recategorización de ${rrecat}.`]);
+    rst.c.forEach((c,i)=>{const r=rroll12(i,rcurK()),pc=r/rkTop();
+      if(r>rkTop())A.push(["badx",`<b>${resc(c.n)} superó el tope de la K en los últimos 12 meses</b> (${rfmt(r)}). Es causal de exclusión: hablá ya con el contador.`]);
+      else if(pc>=0.75)A.push([pc>=0.9?"badx":"warn",`<b>${resc(c.n)} lleva ${rfmt(r)} en los últimos 12 meses</b> (${Math.round(pc*100)}% del tope de la K). Le quedan ${rfmt(rkTop()-r)} antes de la exclusión.`])});
     {const nu=rNextUpd();if(rnow>=nu)A.push(["badx",`<b>Hay topes nuevos de ARCA.</b> Cargalos en "Topes y cuotas de ARCA".`]);
     else if((nu-rnow)/864e5<=15)A.push(["warn",`<b>En ${Math.ceil((nu-rnow)/864e5)} días cambian los topes de ARCA.</b>`])}
     if(rst.est)A.push(["warn","<b>Los montos de facturación son estimados.</b> Cargá los números exactos."]);
@@ -5889,7 +5901,9 @@
       if(!P)out.push(`<li>${resc(f.name)}: no parece un CSV de Mis Comprobantes.</li>`);
       else if(i<0)out.push(`<li>${resc(f.name)}: no encontré el CUIT en el nombre del archivo.</li>`);
       else{const c=rst.c[i],ch=[];const[y0,m0]=P.d0.split("-").map(Number);const[y1,m1]=P.d1.split("-").map(Number);
-        rwin.forEach(w=>{const[y,m]=w.k.split("-").map(Number);const a=y*12+m,lo=y0*12+m0,hi=Math.max(y1*12+m1,rnow.getFullYear()*12+rnow.getMonth()+1);
+        const hiA=Math.max(y1*12+m1,rnow.getFullYear()*12+rnow.getMonth()+1),loA=y0*12+m0+1;
+        for(let a=loA;a<=hiA;a++){const y=Math.floor((a-1)/12),m=(a-1)%12+1,k=y+"-"+m;if(!rwin.some(w=>w.k==k)){c.v[k]=Math.round((P.m[k]||0)*100)/100}}
+        rwin.forEach(w=>{const[y,m]=w.k.split("-").map(Number);const a=y*12+m,lo=y0*12+m0,hi=hiA;
           if(a<lo||a>hi)return;const nv=Math.round((P.m[w.k]||0)*100)/100,ov=c.v[w.k]||0;if(Math.abs(nv-ov)>0.5)ch.push(`${w.t}: ${rfmt(ov)} → ${rfmt(nv)}`);c.v[w.k]=nv});
         P.cl.forEach(nm=>{const k=rclFind(nm)||nm.toLowerCase().replace(/(^|[\s.(])\S/g,x=>x.toUpperCase());if(!rst.cl[k])rst.cl[k]=[0,0,0];rst.cl[k][i]=1});
         out.push(`<li><b>${resc(c.n)}</b>: ${ch.length?ch.length+" mes"+(ch.length>1?"es":"")+" corregido"+(ch.length>1?"s":""):""} ${P.cl.length} clientes.</li>`)}
@@ -5916,13 +5930,14 @@
     const E=revalAll(amt),f=E.f,tots=E.tots,rank=E.rank,best=E.best;
     $r("rFut").placeholder=rshow(rdefFut());
     $r("rH1").textContent="Queda en";$r("rH2").textContent="Cuotas "+rper1;$r("rH3").textContent=rper2+" (est.)";
-    $r("rGf").innerHTML=`<tr><th>Total ventana</th>${tots.map((t,i)=>{const ci=rcatOf(t,f);return`<th style="text-align:right">${rfmt(t)}<br><span class="r-lbl">${ci<0?"excluido":"categoría "+RCATS[ci][0]}</span></th>`}).join("")}</tr>`;
+    const r12row=`<tr><th>Últimos 12 meses<br><span class="r-lbl">para exclusión</span></th>${rst.c.map((c,i)=>{const r=rroll12(i,rcurK()),pc=r/rkTop()*100;return`<th style="text-align:right">${rfmt(r)}<br><span class="r-lbl" style="color:${pc>=90?"var(--bdc)":pc>=75?"var(--wnc)":"var(--mut)"}">${Math.round(pc)}% del tope K</span></th>`}).join("")}</tr>`;
+    $r("rGf").innerHTML=r12row+`<tr><th>Total ventana</th>${tots.map((t,i)=>{const ci=rcatOf(t,f);return`<th style="text-align:right">${rfmt(t)}<br><span class="r-lbl">${ci<0?"excluido":"categoría "+RCATS[ci][0]}</span></th>`}).join("")}</tr>`;
     $r("rBaseLine").textContent=`Sin este trabajo: ${isFinite(E.b1)?rfmt(E.b1):"—"} por mes en ${rper1} y unos ${isFinite(E.b2)?rfmt(E.b2):"—"} por mes en ${rper2}.`;
     const sr=$r("rSumRows"),row=(k,v)=>`<div class="r-rw"><span>${k}</span><span>${v}</span></div>`;
     const empty=(n,t)=>{$r("rVName").textContent=n;sr.innerHTML="";$r("rVCost").innerHTML="";$r("rVWhy").textContent=t;$r("rReg").disabled=true;$r("rReg").textContent="Registrar factura";$r("rReg2").hidden=true};
     if(amt&&!best)empty("Elegí un CUIT","Marcá con qué CUIT se puede facturar a este cliente.");
     else if(!amt)empty("—","Poné el monto del trabajo para ver la recomendación.");
-    else if(!isFinite(best.cost))empty("Ninguno entra","Con cualquiera de los tres se pasan de los topes.");
+    else if(!isFinite(best.cost))empty("Ninguno entra","Con cualquiera de los CUIT habilitados, alguno superaría el tope de la K en los últimos 12 meses (causal de exclusión). Consultá con tu contador antes de facturar.");
     else{
       const c=rst.c[best.i],second=rank[1];
       const tie=second&&isFinite(second.costR)&&Math.abs(second.costR-best.costR)<1000&&second.room>=0;
@@ -5950,7 +5965,7 @@
     const nAl=ral.filter(Boolean).length;$r("rCliN").textContent=nAl==1&&amt&&best?`Como solo se puede facturar con ${rst.c[best.i].n}, no hay otra opción para comparar.`:"";
     if(amt&&S){const parts=S.v.map((x,i)=>x?`${resc(rst.c[i].n)} ${rfmt(x)}`:null).filter(Boolean);
       $r("rSTxt").innerHTML=parts.join(" + ");$r("rSWhy").textContent=best.costR-S.costR>0.5?`Ahorran ${rfmt(best.costR-S.costR)} en el año frente a facturar todo con ${rst.c[best.i].n}.`:`Cuesta casi lo mismo, pero no toca la reserva de nadie.`;}
-    $r("rCmp").innerHTML=rank.map(o=>`<tr class="${amt&&o===best&&isFinite(o.cost)?"r-best":""}"><td>${resc(rst.c[o.i].n)}${o.room<0&&isFinite(o.cost)?'<br><span class="r-chip r-warn">usa reserva</span>':""}</td><td>${o.ci<0?'<span class="r-bad">Excluido</span>':RCATS[o.ci][0]}</td><td>${isFinite(o.m1r)?rfmt(o.m1r)+"/mes":"—"}</td><td>${isFinite(o.m2r)?rfmt(o.m2r)+"/mes":"—"}</td><td>${isFinite(o.costR)?rfmt(o.costR):"—"}</td><td style="color:${!isFinite(o.costR)?"":o.costR-E.base<=0.5?"var(--okc)":o.costR-E.base<1e6?"var(--wnc)":"var(--bdc)"};font-weight:700">${isFinite(o.costR)?(o.costR-E.base>0?"+":"")+rfmt(o.costR-E.base):"—"}</td></tr>`).join("");
+    $r("rCmp").innerHTML=rank.map(o=>`<tr class="${amt&&o===best&&isFinite(o.cost)?"r-best":""}"><td>${resc(rst.c[o.i].n)}${o.room<0&&isFinite(o.cost)?'<br><span class="r-chip r-warn">usa reserva</span>':""}</td><td>${o.exc?'<span class="r-bad">Exclusión</span>':o.ci<0?'<span class="r-bad">Excluido</span>':RCATS[o.ci][0]}</td><td>${isFinite(o.m1r)?rfmt(o.m1r)+"/mes":"—"}</td><td>${isFinite(o.m2r)?rfmt(o.m2r)+"/mes":"—"}</td><td>${isFinite(o.costR)?rfmt(o.costR):"—"}</td><td style="color:${!isFinite(o.costR)?"":o.costR-E.base<=0.5?"var(--okc)":o.costR-E.base<1e6?"var(--wnc)":"var(--bdc)"};font-weight:700">${isFinite(o.costR)?(o.costR-E.base>0?"+":"")+rfmt(o.costR-E.base):"—"}</td></tr>`).join("");
     const SMAX=RCATS[10][1]*f*1.04;
     $r("rGauges").innerHTML=rst.c.map((c,i)=>{
       const ci=rcatOf(tots[i],f);let prev=0;
