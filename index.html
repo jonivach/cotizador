@@ -135,6 +135,12 @@
   /* Vencimientos */
   .ov-ev-row{display:flex;align-items:stretch;border-bottom:1px solid var(--line);}
   .ov-ev-row:last-child{border-bottom:none;}
+  .ov-ev-row.urg-1{background:rgba(220,38,38,.10);}
+  .ov-ev-row.urg-2{background:rgba(234,88,12,.08);}
+  .ov-ev-row.urg-5{background:rgba(217,119,6,.06);}
+  [data-theme="dark"] .ov-ev-row.urg-1{background:rgba(248,113,113,.12);}
+  [data-theme="dark"] .ov-ev-row.urg-2{background:rgba(251,146,60,.10);}
+  [data-theme="dark"] .ov-ev-row.urg-5{background:rgba(252,211,77,.07);}
   .ov-ev-accent{width:3px;flex-shrink:0;}
   .ov-ev-accent.pago{background:#7C3AED;}
   .ov-ev-accent.entrega{background:var(--bad);}
@@ -3585,12 +3591,14 @@
       vencEl.innerHTML = eventos.map(ev => {
         const d = new Date(ev.fecha + 'T12:00:00');
         const isHoy = ev.fecha === todayStr;
+        const diasRestantes = Math.round((d - now) / 86400000);
+        const urgClass = diasRestantes <= 1 ? 'urg-1' : diasRestantes <= 2 ? 'urg-2' : diasRestantes <= 5 ? 'urg-5' : '';
         const monLbl = isHoy ? 'hoy' : months[d.getMonth()];
         const dayClass = isHoy ? 'hoy' : '';
         const subHtml = ev.tipo === 'pago' && ev.monto
           ? `${ev.cot} · <strong style="color:var(--ink)">${fmtPesos(ev.monto)}</strong>`
           : ev.cot;
-        return `<div class="ov-ev-row">
+        return `<div class="ov-ev-row${urgClass?' '+urgClass:''}">
           <div class="ov-ev-accent ${ev.tipo}"></div>
           <div class="ov-ev-inner">
             <div class="ov-ev-date"><div class="ov-ev-mon">${monLbl}</div><div class="ov-ev-day ${dayClass}">${d.getDate()}</div></div>
