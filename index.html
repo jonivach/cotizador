@@ -886,10 +886,11 @@
   #tab-repartidor .rep-side{position:sticky;top:130px;}
   @media(max-width:900px){
     /* Reorder: Calculadora → Resumen → resto */
-    #tab-repartidor .rep-layout{display:flex;flex-direction:column;gap:16px;}
+    #tab-repartidor .rep-layout{display:flex;flex-direction:column;align-items:stretch;gap:16px;}
     #tab-repartidor .rep-main{display:contents;}
     #rCalcCard{order:1;}
-    #tab-repartidor .rep-side{order:2;position:static;}
+    #tab-repartidor .rep-side{order:2;position:static;width:100%;box-sizing:border-box;}
+    #tab-repartidor .rep-side .r-card{width:100%;box-sizing:border-box;}
     #tab-repartidor .rep-main>section:not(#rCalcCard){order:3;}
     /* Calculadora compacta: monto + mes en la misma fila */
     #rCalcCard .r-fields.f2{grid-template-columns:repeat(2,minmax(0,1fr));}
@@ -926,12 +927,13 @@
   /* fields */
   #tab-repartidor .r-fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;}
   #tab-repartidor .r-fields.f2{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start;}
-  /* desplegable de calc card: oculto en mobile, siempre visible en desktop */
-  #tab-repartidor .r-calc-toggle{display:none;}
+  /* desplegable CUIT: oculto en mobile por defecto, siempre visible en desktop */
   @media(max-width:900px){
     #tab-repartidor .r-calc-extra{display:none;}
     #tab-repartidor .r-calc-extra.open{display:block;}
-    #tab-repartidor .r-calc-toggle{display:flex;align-items:center;gap:6px;margin-top:10px;font-size:13px;color:var(--mut);text-transform:none;letter-spacing:0;font-weight:600;min-height:auto;border:0;padding:4px 0;background:transparent;}
+  }
+  @media(min-width:901px){
+    #tab-repartidor .r-calc-toggle{display:none!important;}
   }
   #tab-repartidor .r-fields label{display:block;margin-bottom:5px;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);font-weight:600;}
   #tab-repartidor select, #tab-repartidor input:not([type=checkbox]){font-family:Manrope,sans-serif;font-size:15px;color:var(--ink);min-height:44px;width:100%;background:var(--card);border:1px solid var(--field);border-radius:10px;padding:0 14px;box-sizing:border-box;}
@@ -1434,19 +1436,20 @@
   <div class="rep-main">
 
   <section class="r-card" id="rCalcCard">
-    <div class="r-ch mint"><i class="sq" style="background:var(--rgreen)"></i>Calculadora · ¿con qué CUIT facturo?</div>
+    <div class="r-ch mint"><i class="sq" style="background:var(--rgreen)"></i>¿Con qué CUIT facturo?</div>
     <div class="r-cb">
       <div class="r-fields f2">
         <div class="r-big"><label class="r-lbl" for="rAmt">Monto del trabajo</label><input id="rAmt" class="r-num" inputmode="decimal" placeholder="$ 0" autocomplete="off"></div>
         <div><label class="r-lbl" for="rJm">Mes de facturación</label><select id="rJm"></select></div>
       </div>
-      <div class="r-calc-extra" id="rCalcExtra">
-        <div class="r-fields f2" style="margin-top:12px">
-          <div><label class="r-lbl" for="rCli">Cliente</label><input id="rCli" list="rCliL" autocomplete="off" placeholder="Nombre del cliente (opcional)"><datalist id="rCliL"></datalist></div>
-          <div><span class="r-lbl" style="display:block;margin-bottom:5px">CUIT habilitados</span><div id="rAllow"></div></div>
+      <div style="margin-top:12px"><label class="r-lbl" for="rCli">Cliente</label><input id="rCli" list="rCliL" autocomplete="off" placeholder="Nombre del cliente (opcional)" style="width:100%"><datalist id="rCliL"></datalist></div>
+      <div style="margin-top:12px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
+          <span class="r-lbl">CUIT habilitados</span>
+          <button class="r-ghost r-calc-toggle" id="rCalcToggle" type="button" style="font-size:12px;min-height:auto;padding:2px 0;border:0">▾ cambiar</button>
         </div>
+        <div class="r-calc-extra" id="rCalcExtra"><div id="rAllow"></div></div>
       </div>
-      <button class="r-ghost r-calc-toggle" id="rCalcToggle" type="button">▾ Cliente y CUIT</button>
       <p class="r-fine" id="rCliN" style="margin:8px 0 0"></p>
       <p class="r-fine" id="rSub" style="margin:12px 0 0"></p>
     </div>
@@ -5949,8 +5952,8 @@
   ["rNcC","rNcM"].forEach(id=>$r(id).addEventListener("change",rncDraw));
   $r("rNcA").addEventListener("input",rncDraw);
   $r("rNcA").addEventListener("blur",()=>{const n=rparse($r("rNcA").value);$r("rNcA").value=rshow(n)});
-  // toggle cliente+CUIT en mobile
-  (function(){const btn=$r("rCalcToggle"),box=$r("rCalcExtra");if(!btn)return;btn.addEventListener("click",()=>{const open=box.classList.toggle("open");btn.textContent=(open?"▴":"▾")+" Cliente y CUIT";});})();
+  // toggle CUIT habilitados en mobile
+  (function(){const btn=$r("rCalcToggle"),box=$r("rCalcExtra");if(!btn)return;btn.addEventListener("click",()=>{const open=box.classList.toggle("open");btn.textContent=(open?"▴":"▾")+" cambiar";});})();
   $r("rNcReg").addEventListener("click",()=>{const i=+$r("rNcC").value,k=$r("rNcM").value,a=rparse($r("rNcA").value),c=rst.c[i];if(!(a>0&&a<=(c.v[k]||0)+0.5))return;
     c.v[k]=(c.v[k]||0)-a;const w=rwin.find(x=>x.k==k),tx=$r("rNcT").value.trim();rst.log.push({c:i,k,m:-a,t:(w?w.t:k)+" · Nota de crédito"+(tx?" · "+tx:"")});
     $r("rNcA").value="";$r("rNcT").value="";rsave();rBuildGrid();rCalc();rncDraw()});
