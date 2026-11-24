@@ -2542,13 +2542,14 @@
       return matchSearch && matchFilter && matchMes;
     }).slice().reverse();
     if($('countCotizaciones')) $('countCotizaciones').textContent = cotizaciones.length;
-    // Stat strip
-    const aprobadas = cotizaciones.filter(c => c.estado === 'aprobada');
-    const pendientes = cotizaciones.filter(c => c.estado !== 'aprobada');
+    // Stat strip — filtrar por mes si hay filtro activo
+    const baseStrip = cotizMesFilter ? cotizaciones.filter(c => (c.fechaEmision||'').startsWith(cotizMesFilter)) : cotizaciones;
+    const aprobadas = baseStrip.filter(c => c.estado === 'aprobada');
+    const pendientes = baseStrip.filter(c => c.estado !== 'aprobada');
     const totalAprobado = aprobadas.reduce((s,c) => s+(c.total||0), 0);
     const totalPendiente = pendientes.reduce((s,c) => s+(c.total||0), 0);
-    const totalGanancia = cotizaciones.reduce((s,c) => s+(c.ganancia||0), 0);
-    if($('statCotzTotal')) $('statCotzTotal').textContent = cotizaciones.length;
+    const totalGanancia = baseStrip.reduce((s,c) => s+(c.ganancia||0), 0);
+    if($('statCotzTotal')) $('statCotzTotal').textContent = baseStrip.length;
     if($('statCotzPendiente')) $('statCotzPendiente').textContent = pendientes.length;
     if($('statCotzAprobado')) $('statCotzAprobado').textContent = aprobadas.length;
     const strip = $('cotzStatStrip');
