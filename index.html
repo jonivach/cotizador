@@ -112,7 +112,7 @@
   .ov-year-sel{display:flex;gap:4px;margin-left:12px;}
   .ov-year-btn{background:rgba(0,0,0,0.15);color:var(--ink-soft);border:1px solid transparent;border-radius:6px;padding:3px 10px;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;opacity:0.4;}
   .ov-year-btn.active{background:#1A1A18;color:#fff;opacity:1;}
-  .ov-chart-wrap{position:relative;height:130px;}
+  .ov-chart-wrap{position:relative;height:200px;}
   #ovYearChart{width:100%;height:100%;display:block;}
 
   .ov-stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px;}
@@ -1193,6 +1193,7 @@
         <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
           <div class="ov-chart-legend">
             <div class="ov-leg"><div class="ov-leg-dot" style="background:var(--good)"></div>Facturado</div>
+            <div class="ov-leg"><div class="ov-leg-dot" style="background:#d97706"></div>Compras</div>
             <div class="ov-leg"><div class="ov-leg-dot" style="background:#7C3AED"></div>Proyectos</div>
           </div>
           <div class="ov-year-sel">
@@ -3435,8 +3436,21 @@
     document.getElementById('ovChartYear').textContent = year;
     document.getElementById('ovTotalAnio').textContent = fmtPesos(totalAnio);
     document.getElementById('ovTotalProyAnio').textContent = totalProyAnio;
+    // Compras desde rst.c[i].p para el año seleccionado y el año anterior
+    const purchases = Array(12).fill(0);
+    const prevPurchases = year === 2026 ? Array(12).fill(0) : null;
+    const prevBilling = year === 2026 ? HIST_BILLING_2025.slice() : null;
+    if(typeof rst !== 'undefined' && rst && rst.c){
+      rst.c.forEach(c=>{
+        if(!c.p) return;
+        for(let mi=0;mi<12;mi++){
+          purchases[mi] += c.p[year+'-'+(mi+1)] || 0;
+          if(prevPurchases) prevPurchases[mi] += c.p[(year-1)+'-'+(mi+1)] || 0;
+        }
+      });
+    }
     // Para 2025 no hay "mes actual" resaltado
-    ovDrawChart(billing, jobsCount, year === curYear ? month : -1);
+    ovDrawChart(billing, jobsCount, year === curYear ? month : -1, purchases, prevBilling, prevPurchases);
 
     // ---- STATS ----
     // Pendiente cobro
@@ -3571,21 +3585,25 @@
   }
 
   let _ovLastBilling = null, _ovLastJobs = null, _ovLastMonth = -1;
-  function ovDrawChart(billing, jobsArr, currentMonth){
+  let _ovLastPurchases = null, _ovLastPrevBilling = null, _ovLastPrevPurchases = null;
+  function ovDrawChart(billing, jobsArr, currentMonth, purchases, prevBilling, prevPurchases){
     _ovLastBilling = billing; _ovLastJobs = jobsArr; _ovLastMonth = currentMonth;
+    _ovLastPurchases = purchases||null; _ovLastPrevBilling = prevBilling||null; _ovLastPrevPurchases = prevPurchases||null;
     const canvas = document.getElementById('ovYearChart');
     if(!canvas) return;
     const dpr = window.devicePixelRatio || 1;
     const W = canvas.offsetWidth, H = canvas.offsetHeight;
-    if(!W || !H){ setTimeout(()=>ovDrawChart(billing,jobsArr,currentMonth), 100); return; }
+    if(!W || !H){ setTimeout(()=>ovDrawChart(billing,jobsArr,currentMonth,purchases,prevBilling,prevPurchases), 100); return; }
     canvas.width = W * dpr; canvas.height = H * dpr;
     const ctx = canvas.getContext('2d');
     ctx.scale(dpr, dpr);
     const months = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-    const padL=28, padR=10, padT=10, padB=22;
+    const padL=28, padR=10, padT=10, padB=54;
     const chartW = W-padL-padR, chartH = H-padT-padB;
-    const gap = chartW/12, barW = gap*0.45;
-    const maxB = Math.max(...billing)*1.15 || 1;
+    const gap = chartW/12, barW = gap*0.32;
+    const hasPrev = !!(prevBilling);
+    const allVals = [...billing,...(purchases||[])].filter(v=>v>0);
+    const maxB = (allVals.length ? Math.max(...allVals) : 1)*1.15 || 1;
     const maxJ = Math.max(...jobsArr)*1.2 || 1;
     // detect dark mode
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark' ||
@@ -3594,21 +3612,32 @@
     const labelColorDim = isDark ? '#444440' : '#C5C3BC';
     const labelColorBold = isDark ? '#A0A09A' : '#6B6B65';
     const barColorBase = isDark ? '110,231,183' : '10,107,87';
+    const barColorPurch = isDark ? '251,191,36' : '217,119,6';
     const dotColor = isDark ? '#A78BFA' : '#7C3AED';
     const lineColor = isDark ? 'rgba(167,139,250,0.4)' : 'rgba(124,58,237,0.3)';
+    const colorUp = isDark ? '#4ade80' : '#16a34a';
+    const colorDn = isDark ? '#f87171' : '#dc2626';
     // grid
     ctx.strokeStyle = gridColor; ctx.lineWidth = 0.5;
     for(let i=0;i<=4;i++){const y=padT+chartH*(1-i/4);ctx.beginPath();ctx.moveTo(padL,y);ctx.lineTo(padL+chartW,y);ctx.stroke();}
-    const fullYear = currentMonth === -1; // modo año histórico completo
+    const fullYear = currentMonth === -1;
     const drawUpTo = fullYear ? 11 : currentMonth;
-    // bars
+    const roundedBar=(ctx,x,y,w,h,r)=>{r=Math.min(r,w/2,h);if(h<=0)return;ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);ctx.lineTo(x+w,y+h);ctx.lineTo(x,y+h);ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);ctx.closePath();ctx.fill();};
+    // ventas bars (left of center)
     billing.forEach((v,i)=>{
       if(!v) return;
-      const x=padL+i*gap+gap/2-barW/2, bh=(v/maxB)*chartH, y=padT+chartH-bh;
-      let alpha = fullYear ? 0.65 : (i===currentMonth?1:i>currentMonth?0.12:0.5);
+      const x=padL+i*gap+gap/2-barW-2, bh=(v/maxB)*chartH, y=padT+chartH-bh;
+      const alpha=fullYear?0.65:(i===currentMonth?1:i>currentMonth?0.12:0.5);
       ctx.fillStyle=`rgba(${barColorBase},${alpha})`;
-      const r=Math.min(3,barW/2);
-      ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+barW-r,y);ctx.quadraticCurveTo(x+barW,y,x+barW,y+r);ctx.lineTo(x+barW,padT+chartH);ctx.lineTo(x,padT+chartH);ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);ctx.closePath();ctx.fill();
+      roundedBar(ctx,x,y,barW,bh,Math.min(3,barW/2));
+    });
+    // compras bars (right of center)
+    if(purchases) purchases.forEach((v,i)=>{
+      if(!v) return;
+      const x=padL+i*gap+gap/2+2, bh=(v/maxB)*chartH, y=padT+chartH-bh;
+      const alpha=fullYear?0.65:(i===currentMonth?1:i>currentMonth?0.12:0.5);
+      ctx.fillStyle=`rgba(${barColorPurch},${alpha})`;
+      roundedBar(ctx,x,y,barW,bh,Math.min(3,barW/2));
     });
     // line
     ctx.beginPath();
@@ -3626,13 +3655,44 @@
       const isCur = !fullYear && i===currentMonth;
       ctx.beginPath();ctx.arc(x,y,isCur?4:2.5,0,Math.PI*2);ctx.fillStyle=dotColor;ctx.fill();
     });
-    // labels
-    ctx.textAlign='center';ctx.font=`500 9px 'Space Grotesk',sans-serif`;
+    // month labels + YoY rows
+    ctx.textAlign='center';
     months.forEach((m,i)=>{
       const x=padL+i*gap+gap/2;
+      ctx.font=`500 9px 'Space Grotesk',sans-serif`;
       ctx.fillStyle=(fullYear||i===currentMonth)?labelColorBold:labelColorDim;
       ctx.fillText(m,x,H-5);
+      if(hasPrev){
+        // YoY ventas row
+        ctx.font=`500 8px 'Space Grotesk',sans-serif`;
+        if(prevBilling[i]>0 && billing[i]>0){
+          const pct=Math.round((billing[i]-prevBilling[i])/prevBilling[i]*100);
+          ctx.fillStyle=pct>=0?colorUp:colorDn;
+          ctx.fillText((pct>=0?'▲':'')+pct+'%',x,H-19);
+        } else {
+          ctx.fillStyle=labelColorDim; ctx.fillText('—',x,H-19);
+        }
+        // YoY compras row
+        if(purchases && prevPurchases){
+          ctx.font=`500 7px 'Space Grotesk',sans-serif`;
+          if(prevPurchases[i]>0 && purchases[i]>0){
+            const pct=Math.round((purchases[i]-prevPurchases[i])/prevPurchases[i]*100);
+            ctx.fillStyle=pct>=0?colorUp:colorDn;
+            ctx.fillText((pct>=0?'▲':'')+pct+'%',x,H-32);
+          } else {
+            ctx.fillStyle=labelColorDim; ctx.fillText('—',x,H-32);
+          }
+        }
+      }
     });
+    // row labels on left margin
+    if(hasPrev){
+      ctx.textAlign='right';
+      ctx.font=`500 7px 'Space Grotesk',sans-serif`;
+      ctx.fillStyle=labelColorDim;
+      ctx.fillText('V',padL-2,H-19);
+      if(purchases&&prevPurchases) ctx.fillText('C',padL-2,H-32);
+    }
     // tooltip on hover
     if(!canvas._ovTooltipBound){
       canvas._ovTooltipBound = true;
@@ -3643,11 +3703,11 @@
         const rect=canvas.getBoundingClientRect();
         const mx=e.clientX-rect.left, my=e.clientY-rect.top;
         const W2=canvas.offsetWidth,H2=canvas.offsetHeight;
-        const cW=W2-padL-padR,cH=H2-padT-padB,g=cW/12,bW2=g*0.45;
-        const maxB2=Math.max(...(_ovLastBilling||[1]))*1.15||1;
+        const cW=W2-padL-padR,cH=H2-padT-padB,g=cW/12,bW2=g*0.32;
+        const allV=[...(_ovLastBilling||[1]),...(_ovLastPurchases||[])].filter(v=>v>0);
+        const maxB2=(allV.length?Math.max(...allV):1)*1.15||1;
         const maxJ2=Math.max(...(_ovLastJobs||[1]))*1.2||1;
         let found=false;
-        // dots first
         (_ovLastJobs||[]).forEach((v,i)=>{
           if((_ovLastMonth!==-1&&i>_ovLastMonth)||!v)return;
           const x=padL+i*g+g/2,y=padT+cH-(v/maxJ2)*cH;
@@ -3660,10 +3720,21 @@
         if(!found){
           (_ovLastBilling||[]).forEach((v,i)=>{
             if(!v)return;
-            const x=padL+i*g+g/2-bW2/2,bh=(v/maxB2)*cH,y=padT+cH-bh;
+            const x=padL+i*g+g/2-bW2-2,bh=(v/maxB2)*cH,y=padT+cH-bh;
             if(mx>=x&&mx<=x+bW2&&my>=y&&my<=padT+cH){
               tip.style.display='block';
               tip.innerHTML=`<span style="color:var(--good)">▮</span> ${fmtPesos(v)} · ${['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'][i]}`;
+              canvas.style.cursor='pointer';found=true;
+            }
+          });
+        }
+        if(!found && _ovLastPurchases){
+          (_ovLastPurchases||[]).forEach((v,i)=>{
+            if(!v)return;
+            const x=padL+i*g+g/2+2,bh=(v/maxB2)*cH,y=padT+cH-bh;
+            if(mx>=x&&mx<=x+bW2&&my>=y&&my<=padT+cH){
+              tip.style.display='block';
+              tip.innerHTML=`<span style="color:#d97706">▮</span> ${fmtPesos(v)} compras · ${['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'][i]}`;
               canvas.style.cursor='pointer';found=true;
             }
           });
@@ -3675,7 +3746,7 @@
     }
   }
 
-  window.addEventListener('resize',()=>{ if(_ovLastBilling) ovDrawChart(_ovLastBilling,_ovLastJobs,_ovLastMonth); });
+  window.addEventListener('resize',()=>{ if(_ovLastBilling) ovDrawChart(_ovLastBilling,_ovLastJobs,_ovLastMonth,_ovLastPurchases,_ovLastPrevBilling,_ovLastPrevPurchases); });
 
   function totalGastosC(c){
     return (c.gastosReales||[]).reduce((s,g) => s + (g.items||[]).reduce((a,i)=>a+(i.monto||0),0), 0);
@@ -5782,6 +5853,7 @@
       fx(1,"2026-1",208000,108000);fx(1,"2026-11",5440000,6457000);fx(2,"2026-3",13725000,14325000);fx(2,"2026-4",8325000,7725000);rst.fix1=1}
     if(!rst.fix2){[[0,"2025-12",0],[1,"2025-12",200000],[2,"2025-12",7491500]].forEach(([i,k,v])=>{if(rst.c[i]&&rst.c[i].v[k]==null)rst.c[i].v[k]=v});rst.fix2=1}
     if(!rst.fix3){const P0=[{"2025-12":633937,"2026-1":0,"2026-2":760686,"2026-3":141304,"2026-4":260935,"2026-5":75849,"2026-6":154386,"2026-7":3427132,"2026-8":336294,"2026-9":301074,"2026-10":1153070},{"2025-12":956302,"2026-1":426964,"2026-2":330503,"2026-3":516622,"2026-4":1106180,"2026-5":1608497,"2026-6":783182,"2026-7":7413600,"2026-8":600337,"2026-9":542909,"2026-10":552838},{"2025-12":459016,"2026-1":614675,"2026-2":160000,"2026-3":1534190,"2026-4":490290,"2026-5":196000,"2026-6":295998,"2026-7":0,"2026-8":198527,"2026-9":246723,"2026-10":259481}];rst.c.forEach((c,i)=>{if(!c.p)c.p={};for(const[k,v]of Object.entries(P0[i]))if(c.p[k]==null)c.p[k]=v});rst.fix3=1}
+    if(!rst.fix4){const P4=[{"2025-9":2349363,"2025-10":340036,"2025-11":1661815},{"2025-9":5312627,"2025-10":1849519,"2025-11":585838},{"2025-9":0,"2025-10":0,"2025-11":74100}];rst.c.forEach((c,i)=>{if(!c.p)c.p={};for(const[k,v]of Object.entries(P4[i]))if(c.p[k]==null&&v>0)c.p[k]=v});rst.fix4=1}
     rst.c.forEach(c=>{if(!c.p)c.p={}});
     if(!rst.colp)rst.colp={rCmpCard:1,rFactCard:1,rLogCard:1,rHowCard:1,rTopCard:1,rNcCard:1,rImpCard:1};
     if(!rst.vig)rst.vig="2026-8";
