@@ -2637,12 +2637,13 @@
       sel.innerHTML = `<option value="">Todos los meses</option>` + mesesDisp.map(k=>`<option value="${k}">${fmtMes(k)}</option>`).join('');
       sel.value = aprobMesFilter;
     }
-    const byEstado = aprobEstadoFilter === 'todos' ? aprobados : aprobados.filter(c => (c.estadoProyecto||'en-curso') === aprobEstadoFilter);
     const normD3 = d => { if(!d) return ''; if(/^\d{4}-\d{2}-\d{2}/.test(d)) return d.slice(0,10); if(/^\d{2}\/\d{2}\/\d{4}$/.test(d)){ const [dd,mm,yy]=d.split('/'); return `${yy}-${mm}-${dd}`; } return d; };
     const firstD3 = c => { for(const e of (c.entregas||[])){ const d=normD3(e.fecha); if(d) return d; } for(const p of (c.pagos||[])){ const d=normD3(p.fecha); if(d) return d; } return ''; };
     const fechaRefC = c => normD3(c.fechaAprobacion) || normD3(c.fechaEmision) || firstD3(c);
-    const byMes = aprobMesFilter ? byEstado.filter(c => fechaRefC(c).startsWith(aprobMesFilter)) : byEstado;
-    const filtered = q ? byMes.filter(c =>
+    // Base filtrada por mes (para contadores y lista)
+    const baseParaMes = aprobMesFilter ? aprobados.filter(c => fechaRefC(c).startsWith(aprobMesFilter)) : aprobados;
+    const byEstado = aprobEstadoFilter === 'todos' ? baseParaMes : baseParaMes.filter(c => (c.estadoProyecto||'en-curso') === aprobEstadoFilter);
+    const filtered = q ? byEstado.filter(c =>
       (c.num||'').toLowerCase().includes(q) ||
       (c.agencia||'').toLowerCase().includes(q) ||
       (c.numFactura||'').toLowerCase().includes(q) ||
@@ -2653,21 +2654,22 @@
       (c.productosAprobados||[]).some(p => (p.nombre||'').toLowerCase().includes(q))
     ) : byEstado;
 
-    const totalMonto = aprobados.reduce((s,c) => s + (c.totalAprobado ?? c.total ?? 0), 0);
-    const totalGanancia = aprobados.reduce((s,c) => s + (c.gananciaAprobada ?? c.ganancia ?? 0), 0);
+    const totalMonto = baseParaMes.reduce((s,c) => s + (c.totalAprobado ?? c.total ?? 0), 0);
+    const totalGanancia = baseParaMes.reduce((s,c) => s + (c.gananciaAprobada ?? c.ganancia ?? 0), 0);
     const el = $('aprobadosWrap');
     if($('aprobCount')) $('aprobCount').textContent = aprobados.length;
     if($('aprobTotal')) $('aprobTotal').textContent = '$ ' + fmt.format(Math.round(totalMonto));
     if($('aprobGanancia')) $('aprobGanancia').textContent = '$ ' + fmt.format(Math.round(totalGanancia));
     if($('countAprobados')) $('countAprobados').textContent = aprobados.length;
-    const countEP = (ep) => aprobados.filter(c=>(c.estadoProyecto||'en-curso')===ep).length;
+    // Contadores de estado: filtrados por mes si hay filtro activo
+    const countEP = (ep) => baseParaMes.filter(c=>(c.estadoProyecto||'en-curso')===ep).length;
     if($('statEncurso'))    $('statEncurso').textContent    = countEP('en-curso');
     if($('statEntregadoNC'))$('statEntregadoNC').textContent= countEP('entregado-nc');
     if($('statNoEntCob'))   $('statNoEntCob').textContent   = countEP('no-ent-cob');
     if($('statCompletado')) $('statCompletado').textContent = countEP('completado');
     const hoy = new Date(); const mesActualKey = `${hoy.getFullYear()}-${String(hoy.getMonth()+1).padStart(2,'0')}`;
     const nomMesesStat = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
-    const facturadoMes = aprobados.filter(c => (c.fechaAprobacion||'').startsWith(mesActualKey)).reduce((s,c) => s+(c.totalAprobado??c.total??0), 0);
+    const facturadoMes = aprobados.filter(c => fechaRefC(c).startsWith(mesActualKey)).reduce((s,c) => s+(c.totalAprobado??c.total??0), 0);
     if($('statFacturadoMes')) $('statFacturadoMes').textContent = '$ ' + fmt.format(Math.round(facturadoMes));
     if($('statMesLbl')) $('statMesLbl').textContent = `Facturado ${nomMesesStat[hoy.getMonth()]} ${hoy.getFullYear()}`;
     if(!el) return;
@@ -3543,9 +3545,12 @@
     document.getElementById('ovPendProv').textContent = fmtPesos(pendProvTotal);
     document.getElementById('ovPendProvNames').textContent = pendProvNames.slice(0,4).join(' · ') || '—';
 
-    // Proyectos del mes actual
+    // Proyectos del mes actual — misma lógica de fecha que Proyectos Aprobados
     const mesActual = todayStr.slice(0,7);
-    const proySemMes = aprobadas.filter(c => { const f = c.fechaAprobacion||c.fechaEmision||c.fecha||''; return f.startsWith(mesActual); });
+    const normDOv = d => { if(!d) return ''; if(/^\d{4}-\d{2}-\d{2}/.test(d)) return d.slice(0,10); if(/^\d{2}\/\d{2}\/\d{4}$/.test(d)){ const [dd,mm,yy]=d.split('/'); return `${yy}-${mm}-${dd}`; } return d; };
+    const firstDOv = c => { for(const e of (c.entregas||[])){ const d=normDOv(e.fecha); if(d) return d; } for(const p of (c.pagos||[])){ const d=normDOv(p.fecha); if(d) return d; } return ''; };
+    const fechaRefOv = c => normDOv(c.fechaAprobacion) || normDOv(c.fechaEmision) || firstDOv(c);
+    const proySemMes = aprobadas.filter(c => fechaRefOv(c).startsWith(mesActual));
     const proySemMesEnCurso = proySemMes.filter(c => (c.estadoProyecto||'en-curso') === 'en-curso');
     document.getElementById('ovProyActivos').textContent = proySemMesEnCurso.length + ' / ' + proySemMes.length;
     document.getElementById('ovProyActivosSub').textContent = now.toLocaleString('es-AR',{month:'long',year:'numeric'});
