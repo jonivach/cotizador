@@ -2259,13 +2259,22 @@
       cloudDataLoaded = true; // Data is now loaded — safe to save
       cloudMinCount = Math.max(cloudMinCount, cotizaciones.length);
       // Migración: setear fechaEmision en proyectos viejos que no la tienen
-      { let migChanged = false;
+      { const normD = d => {
+          if(!d) return null;
+          if(/^\d{4}-\d{2}-\d{2}/.test(d)) return d.slice(0,10);
+          if(/^\d{2}\/\d{2}\/\d{4}$/.test(d)){ const [dd,mm,yy]=d.split('/'); return `${yy}-${mm}-${dd}`; }
+          return null;
+        };
+        const firstDate = c => {
+          for(const e of (c.entregas||[])){ const d=normD(e.fecha); if(d) return d; }
+          for(const p of (c.pagos||[])){ const d=normD(p.fecha); if(d) return d; }
+          return null;
+        };
+        let migChanged = false;
         cotizaciones.forEach(c => {
           if(c.estado === 'aprobada' && !c.fechaEmision){
-            const ent0 = c.entregas && c.entregas[0] && c.entregas[0].fecha;
-            const pag0 = c.pagos && c.pagos[0] && c.pagos[0].fecha;
-            const ref = ent0 || pag0;
-            if(ref && /^\d{4}-\d{2}-\d{2}$/.test(ref)){ c.fechaEmision = ref; migChanged = true; }
+            const d = firstDate(c);
+            if(d){ c.fechaEmision = d; migChanged = true; }
           }
         });
         if(migChanged) saveCotizaciones(cotizaciones);
@@ -2618,7 +2627,9 @@
     const sel = $('aprobMesFiltro');
     if(sel){
       const todosAprob = cotizaciones.filter(c => c.estado === 'aprobada');
-      const fechaRef = c => c.fechaAprobacion || c.fechaEmision || (c.entregas&&c.entregas[0]&&c.entregas[0].fecha) || (c.pagos&&c.pagos[0]&&c.pagos[0].fecha) || '';
+      const normD2 = d => { if(!d) return ''; if(/^\d{4}-\d{2}-\d{2}/.test(d)) return d.slice(0,10); if(/^\d{2}\/\d{2}\/\d{4}$/.test(d)){ const [dd,mm,yy]=d.split('/'); return `${yy}-${mm}-${dd}`; } return d; };
+      const firstD2 = c => { for(const e of (c.entregas||[])){ const d=normD2(e.fecha); if(d) return d; } for(const p of (c.pagos||[])){ const d=normD2(p.fecha); if(d) return d; } return ''; };
+      const fechaRef = c => normD2(c.fechaAprobacion) || normD2(c.fechaEmision) || firstD2(c);
       const mesesDisp = [...new Set(todosAprob.map(c=>fechaRef(c).slice(0,7)).filter(Boolean))].sort().reverse();
       const nomMeses = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
       const fmtMes = k => { const [y,m]=k.split('-'); return `${nomMeses[parseInt(m)-1]} ${y}`; };
@@ -2626,7 +2637,9 @@
       sel.value = aprobMesFilter;
     }
     const byEstado = aprobEstadoFilter === 'todos' ? aprobados : aprobados.filter(c => (c.estadoProyecto||'en-curso') === aprobEstadoFilter);
-    const fechaRefC = c => c.fechaAprobacion || c.fechaEmision || (c.entregas&&c.entregas[0]&&c.entregas[0].fecha) || (c.pagos&&c.pagos[0]&&c.pagos[0].fecha) || '';
+    const normD3 = d => { if(!d) return ''; if(/^\d{4}-\d{2}-\d{2}/.test(d)) return d.slice(0,10); if(/^\d{2}\/\d{2}\/\d{4}$/.test(d)){ const [dd,mm,yy]=d.split('/'); return `${yy}-${mm}-${dd}`; } return d; };
+    const firstD3 = c => { for(const e of (c.entregas||[])){ const d=normD3(e.fecha); if(d) return d; } for(const p of (c.pagos||[])){ const d=normD3(p.fecha); if(d) return d; } return ''; };
+    const fechaRefC = c => normD3(c.fechaAprobacion) || normD3(c.fechaEmision) || firstD3(c);
     const byMes = aprobMesFilter ? byEstado.filter(c => fechaRefC(c).startsWith(aprobMesFilter)) : byEstado;
     const filtered = q ? byMes.filter(c =>
       (c.num||'').toLowerCase().includes(q) ||
