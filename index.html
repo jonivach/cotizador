@@ -2258,6 +2258,18 @@
       }
       cloudDataLoaded = true; // Data is now loaded — safe to save
       cloudMinCount = Math.max(cloudMinCount, cotizaciones.length);
+      // Migración: setear fechaEmision en proyectos viejos que no la tienen
+      { let migChanged = false;
+        cotizaciones.forEach(c => {
+          if(c.estado === 'aprobada' && !c.fechaEmision){
+            const ent0 = c.entregas && c.entregas[0] && c.entregas[0].fecha;
+            const pag0 = c.pagos && c.pagos[0] && c.pagos[0].fecha;
+            const ref = ent0 || pag0;
+            if(ref && /^\d{4}-\d{2}-\d{2}$/.test(ref)){ c.fechaEmision = ref; migChanged = true; }
+          }
+        });
+        if(migChanged) saveCotizaciones(cotizaciones);
+      }
       // Ocultar banner de carga
       const lb = document.getElementById('loadingBanner');
       if(lb) lb.classList.add('hidden');
