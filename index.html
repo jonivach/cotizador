@@ -971,6 +971,12 @@
   #tab-repartidor .r-legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px;}
   /* mini donut */
   #tab-repartidor .r-mini{display:none;}
+  #tab-repartidor .r-pleg{display:none;}
+  @media(min-width:1100px){
+    #tab-repartidor #rPleg{display:flex;}
+    #tab-repartidor .r-pleg{display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;color:var(--mut);margin-top:10px;}
+    #tab-repartidor .r-pleg i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px;}
+  }
   /* table */
   #tab-repartidor table{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums;font-family:Manrope,sans-serif;}
   #tab-repartidor th,#tab-repartidor td{padding:7px 9px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap;}
@@ -1014,6 +1020,7 @@
   .r-badx{color:var(--bdc);background:var(--bdb);}
   #tab-repartidor .r-dot{width:12px;height:12px;border-radius:50%;background:conic-gradient(var(--rgreen) 0 33%,var(--rviolet) 0 66%,var(--rgold) 0);flex:none;}
   @media(min-width:1100px){
+    /* donuts */
     #rCatCard .r-gauges{grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;}
     #rCatCard .r-track{display:none;}
     #rCatCard .r-mini{display:block;}
@@ -1025,6 +1032,46 @@
     #rCatCard .r-badge{display:none;}
     #rCatCard .r-g.r-win{background:var(--greenSoft);box-shadow:inset 0 0 0 1.5px var(--rgreen);}
     #rCatCard .r-legend{display:none;}
+    /* grid-areas layout: 3 main cards + side */
+    #tab-repartidor .rep-layout{grid-template-columns:minmax(0,1fr) minmax(0,340px);grid-template-areas:"rcalc rside" "rcat rside" "ralert rside";gap:16px;padding:16px max(2.5vw,16px) 48px;align-items:stretch;}
+    #tab-repartidor .rep-main{display:contents;}
+    #rCalcCard{grid-area:rcalc;}
+    #rCatCard{grid-area:rcat;}
+    #rAlertCard{grid-area:ralert;}
+    #tab-repartidor .rep-side{grid-area:rside;position:static;display:flex;}
+    #tab-repartidor .rep-side>section{flex:1;display:flex;flex-direction:column;}
+    #tab-repartidor .rep-side>section>.r-cb{flex:1;display:flex;flex-direction:column;}
+    #tab-repartidor .rep-side .r-btns{margin-top:auto;padding-top:12px;}
+    #tab-repartidor .rep-main>section:not(#rCalcCard):not(#rAlertCard):not(#rCatCard){grid-column:1/-1;}
+    /* compact UI overrides */
+    #tab-repartidor .r-ch{padding:9px 20px;font-size:15px;}
+    #tab-repartidor .r-cb{padding:12px 20px;}
+    #tab-repartidor .r-fields{gap:10px;}
+    #tab-repartidor select,#tab-repartidor input:not([type=checkbox]){min-height:40px;}
+    #tab-repartidor .r-fields.f2 .r-big input,#tab-repartidor .r-fields.f2 select{min-height:40px;}
+    #tab-repartidor .r-big input{font-size:20px;}
+    #tab-repartidor #rAllow button{min-height:32px;}
+    #tab-repartidor .r-alerts{gap:6px;}
+    #tab-repartidor .r-alerts li{padding:8px 12px;font-size:13px;gap:10px;}
+    #tab-repartidor .r-alerts li .r-ic{width:18px;height:18px;font-size:11px;}
+    #tab-repartidor .r-gauges{gap:10px;}
+    #tab-repartidor .r-gh{gap:10px;}
+    #tab-repartidor .r-badge{width:34px;height:34px;font-size:16px;}
+    #tab-repartidor .r-gh .r-who2 b{font-size:14.5px;}
+    #tab-repartidor .r-gh .r-who2 span{font-size:12px;line-height:1.35;display:block;}
+    #tab-repartidor .r-track{height:18px;margin-top:4px;border-radius:6px;}
+    #tab-repartidor .r-seg{font-size:9.5px;}
+    #tab-repartidor .r-chip{font-size:10px;padding:2px 8px;}
+    #tab-repartidor .rep-side .r-cb{padding:16px 20px;}
+    #tab-repartidor .r-sev{font-size:12.5px;padding:6px 10px;margin-bottom:10px;}
+    #tab-repartidor #rVName{font-size:28px;margin-bottom:8px;}
+    #tab-repartidor .r-rw{padding:7px 0;font-size:13px;}
+    #tab-repartidor .r-total{margin-top:10px;}
+    #tab-repartidor .r-total b{font-size:28px;}
+    #tab-repartidor .r-gain{padding:10px 12px;margin-bottom:12px;}
+    #tab-repartidor #rSTxt{font-size:14.5px;}
+    #tab-repartidor .r-btns{margin-top:12px;}
+    #tab-repartidor button{min-height:40px;}
   }
 </style>
 </head>
@@ -1402,6 +1449,7 @@
     <div class="r-cb">
       <div class="r-gauges" id="rGauges"></div>
       <div class="r-legend"><span><i style="background:light-dark(#cfd3d0,#3b3e42)"></i>Ya facturado en la ventana</span><span><i style="background:var(--rgreen)"></i>Este trabajo, si lo facturás ahí</span></div>
+      <div class="r-pleg" id="rPleg"><span><i style="background:light-dark(#9aa19c,#5b6160)"></i>Usado de su categoría</span><span><i style="background:var(--rgreen)"></i>Este trabajo</span><span><i style="background:light-dark(#efc9c4,#5a2a26)"></i>Reserva</span><span><i style="background:var(--soft);border:1px solid var(--field)"></i>Libre</span></div>
     </div>
   </section>
 
