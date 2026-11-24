@@ -1022,6 +1022,8 @@
   #tab-repartidor .r-drop{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border:1.5px dashed var(--field);border-radius:14px;padding:22px;cursor:pointer;text-align:center;font-size:14px;}
   #tab-repartidor .r-drop span{color:var(--mut);font-size:13px;}
   #tab-repartidor .r-drop.over{border-color:var(--rgreen);background:var(--greenSoft);}
+  #tab-repartidor .r-prow td{padding:1px 6px 4px;}
+  #tab-repartidor .r-pnum{min-height:28px!important;font-size:12px!important;color:var(--mut);}
   /* alerts */
   #tab-repartidor .r-alerts{list-style:none;margin:0;padding:0;display:grid;gap:8px;}
   #tab-repartidor .r-alerts li{display:flex;gap:12px;align-items:flex-start;border-radius:14px;padding:12px 14px;font-size:14px;line-height:1.4;}
@@ -5779,6 +5781,8 @@
     if(!rst.fix1){const fx=(i,k,o,n)=>{if(rst.c[i]&&rst.c[i].v[k]===o)rst.c[i].v[k]=n};
       fx(1,"2026-1",208000,108000);fx(1,"2026-11",5440000,6457000);fx(2,"2026-3",13725000,14325000);fx(2,"2026-4",8325000,7725000);rst.fix1=1}
     if(!rst.fix2){[[0,"2025-12",0],[1,"2025-12",200000],[2,"2025-12",7491500]].forEach(([i,k,v])=>{if(rst.c[i]&&rst.c[i].v[k]==null)rst.c[i].v[k]=v});rst.fix2=1}
+    if(!rst.fix3){const P0=[{"2025-12":633937,"2026-1":0,"2026-2":760686,"2026-3":141304,"2026-4":260935,"2026-5":75849,"2026-6":154386,"2026-7":3427132,"2026-8":336294,"2026-9":301074,"2026-10":1153070},{"2025-12":956302,"2026-1":426964,"2026-2":330503,"2026-3":516622,"2026-4":1106180,"2026-5":1608497,"2026-6":783182,"2026-7":7413600,"2026-8":600337,"2026-9":542909,"2026-10":552838},{"2025-12":459016,"2026-1":614675,"2026-2":160000,"2026-3":1534190,"2026-4":490290,"2026-5":196000,"2026-6":295998,"2026-7":0,"2026-8":198527,"2026-9":246723,"2026-10":259481}];rst.c.forEach((c,i)=>{if(!c.p)c.p={};for(const[k,v]of Object.entries(P0[i]))if(c.p[k]==null)c.p[k]=v});rst.fix3=1}
+    rst.c.forEach(c=>{if(!c.p)c.p={}});
     if(!rst.colp)rst.colp={rCmpCard:1,rFactCard:1,rLogCard:1,rHowCard:1,rTopCard:1,rNcCard:1,rImpCard:1};
     if(!rst.vig)rst.vig="2026-8";
     if(rst.cats&&rst.cats.length==11)rst.cats.forEach((x,i)=>{RCATS[i][1]=+x[1]||RCATS[i][1];RCATS[i][2]=+x[2]||RCATS[i][2];RCATS[i][3]=+x[3]||RCATS[i][3]});
@@ -5790,14 +5794,18 @@
     $r("rCliL").innerHTML=Object.keys(rst.cl).map(n=>`<option value="${resc(n)}">`).join("")}
   function rBuildGrid(){
     $r("rGh").innerHTML=`<tr><th>Mes</th>${rst.c.map(c=>`<th class="r-who">${resc(c.n)}<span>${c.a==2?"Servicios":"Bienes"}</span></th>`).join("")}</tr><tr><th class="r-lbl">Paga IIBB CABA</th>${rst.c.map((c,i)=>`<th><label style="display:flex;gap:8px;align-items:center;justify-content:flex-end;min-height:34px;font-weight:600;text-transform:none;letter-spacing:0;font-size:14px;color:var(--ink)"><input type="checkbox" id="rb${i}" ${c.b?"checked":""}> Sí</label></th>`).join("")}</tr><tr><th class="r-lbl">Reserva</th>${rst.c.map((c,i)=>`<th><input class="r-num" id="rrs${i}" inputmode="decimal" value="${rshow(rresv()[i])}" placeholder="0" aria-label="Reserva de ${resc(c.n)}"></th>`).join("")}</tr>`;
-    $r("rGb").innerHTML=rwin.map(w=>`<tr><td>${w.t}${w.fut?" ·":""}</td>${rst.c.map((c,i)=>`<td><input class="r-num" inputmode="decimal" data-c="${i}" data-k="${w.k}" value="${rshow(c.v[w.k])}" placeholder="0"></td>`).join("")}</tr>`).join("");
+    $r("rGb").innerHTML=rwin.map(w=>`<tr><td>${w.t}${w.fut?" ·":""}</td>${rst.c.map((c,i)=>`<td><input class="r-num" inputmode="decimal" data-c="${i}" data-k="${w.k}" value="${rshow(c.v[w.k])}" placeholder="0"></td>`).join("")}</tr><tr class="r-prow"><td><span class="r-lbl" style="font-size:10px;padding-left:4px">compras</span></td>${rst.c.map((c,i)=>`<td><input class="r-num r-pnum" inputmode="decimal" data-pc="${i}" data-pk="${w.k}" value="${rshow(c.p&&c.p[w.k])}" placeholder="0"></td>`).join("")}</tr>`).join("");
     rst.c.forEach((c,i)=>{
       $r("rb"+i).addEventListener("change",e=>{c.b=e.target.checked?1:0;rsave();rCalc()});
       $r("rrs"+i).addEventListener("input",e=>{rresv();rst.res[i]=rparse(e.target.value);rsave();rCalc()});
       $r("rrs"+i).addEventListener("blur",e=>{e.target.value=rshow(rparse(e.target.value))});
     });
-    document.querySelectorAll("#rGb input").forEach(el=>{
+    document.querySelectorAll("#rGb input[data-c]").forEach(el=>{
       el.addEventListener("input",()=>{rst.c[el.dataset.c].v[el.dataset.k]=rparse(el.value);rst.est=0;$r("rEstN").hidden=true;rsave();rCalc()});
+      el.addEventListener("blur",()=>{el.value=rshow(rparse(el.value))});
+    });
+    document.querySelectorAll("#rGb input[data-pk]").forEach(el=>{
+      el.addEventListener("input",()=>{if(!rst.c[el.dataset.pc].p)rst.c[el.dataset.pc].p={};rst.c[el.dataset.pc].p[el.dataset.pk]=rparse(el.value);rsave();rCalc()});
       el.addEventListener("blur",()=>{el.value=rshow(rparse(el.value))});
     });
   }
@@ -5930,8 +5938,12 @@
     const E=revalAll(amt),f=E.f,tots=E.tots,rank=E.rank,best=E.best;
     $r("rFut").placeholder=rshow(rdefFut());
     $r("rH1").textContent="Queda en";$r("rH2").textContent="Cuotas "+rper1;$r("rH3").textContent=rper2+" (est.)";
+    const rptotOf=c=>rwin.reduce((s,w)=>s+(c.p&&c.p[w.k]||0),0);
+    const ptots=rst.c.map(rptotOf);
     const r12row=`<tr><th>Últimos 12 meses<br><span class="r-lbl">para exclusión</span></th>${rst.c.map((c,i)=>{const r=rroll12(i,rcurK()),pc=r/rkTop()*100;return`<th style="text-align:right">${rfmt(r)}<br><span class="r-lbl" style="color:${pc>=90?"var(--bdc)":pc>=75?"var(--wnc)":"var(--mut)"}">${Math.round(pc)}% del tope K</span></th>`}).join("")}</tr>`;
-    $r("rGf").innerHTML=r12row+`<tr><th>Total ventana</th>${tots.map((t,i)=>{const ci=rcatOf(t,f);return`<th style="text-align:right">${rfmt(t)}<br><span class="r-lbl">${ci<0?"excluido":"categoría "+RCATS[ci][0]}</span></th>`}).join("")}</tr>`;
+    const pRow=`<tr><th>Total compras ventana</th>${ptots.map(pt=>`<th style="text-align:right">${rfmt(pt)}</th>`).join("")}</tr>`;
+    const cvRow=`<tr><th>C/V</th>${tots.map((t,i)=>`<th style="text-align:right;color:${ptots[i]>0&&ptots[i]/t>=0.4?"var(--wnc)":"var(--mut)"}">${ptots[i]>0&&t>0?Math.round(ptots[i]/t*100)+"%":"—"}</th>`).join("")}</tr>`;
+    $r("rGf").innerHTML=r12row+pRow+cvRow+`<tr><th>Total ventana</th>${tots.map((t,i)=>{const ci=rcatOf(t,f);return`<th style="text-align:right">${rfmt(t)}<br><span class="r-lbl">${ci<0?"excluido":"categoría "+RCATS[ci][0]}</span></th>`}).join("")}</tr>`;
     $r("rBaseLine").textContent=`Sin este trabajo: ${isFinite(E.b1)?rfmt(E.b1):"—"} por mes en ${rper1} y unos ${isFinite(E.b2)?rfmt(E.b2):"—"} por mes en ${rper2}.`;
     const sr=$r("rSumRows"),row=(k,v)=>`<div class="r-rw"><span>${k}</span><span>${v}</span></div>`;
     const empty=(n,t)=>{$r("rVName").textContent=n;sr.innerHTML="";$r("rVCost").innerHTML="";$r("rVWhy").textContent=t;$r("rReg").disabled=true;$r("rReg").textContent="Registrar factura";$r("rReg2").hidden=true};
