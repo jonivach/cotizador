@@ -2728,7 +2728,15 @@
         const cuenta = CUENTAS[opt.dataset.cuenta];
         const total = c.totalAprobado ?? c.total ?? 0;
         const sep = '_____________________________________________';
-        const texto = `Hola, buenos días! ¿Cómo estás? Adjunto a continuación la factura y datos para la transferencia; por favor compartir el comprobante una vez realizado el pago.\n${sep}\nFactura: ${c.numFactura||'—'}\nMonto: $${fmt.format(Math.round(total))} .-\nFecha de pago: ${fmtFechaCopy((c.pagos||[])[0]?.fecha||'')}\nFecha de entrega: ${fmtFechaCopy((c.entregas||[])[0]?.fecha||'')}\n${sep}\nRAZÓN SOCIAL / NOMBRE: ${cuenta.nombre}\nCUIT: ${cuenta.cuit}\nALIAS: ${cuenta.alias}\nCBU: ${cuenta.cbu}\nN DE CUENTA: ${cuenta.ncuenta}\nBANCO EMISOR: ${cuenta.banco}\n${sep}\nSaludos,\nJoni`;
+        const pagos = (c.pagos||[]).filter(p=>p.fecha);
+        const entregas = (c.entregas||[]).filter(e=>e.fecha);
+        const pagosTxt = pagos.length === 1
+          ? `Fecha de pago: ${fmtFechaCopy(pagos[0].fecha)}`
+          : pagos.map((p,i)=>`Pago ${i+1}: ${fmtFechaCopy(p.fecha)} ($${fmt.format(Math.round((p.porcentaje||0)/100*total))})`).join('\n');
+        const entregasTxt = entregas.length === 1
+          ? `Fecha de entrega: ${fmtFechaCopy(entregas[0].fecha)}`
+          : entregas.map((e,i)=>`Entrega ${i+1}: ${fmtFechaCopy(e.fecha)}`).join('\n');
+        const texto = `Hola, buenos días! ¿Cómo estás? Adjunto a continuación la factura y datos para la transferencia; por favor compartir el comprobante una vez realizado el pago.\n${sep}\nFactura: ${c.numFactura||'—'}\nMonto: $${fmt.format(Math.round(total))} .-\n${pagosTxt}\n${entregasTxt}\n${sep}\nRAZÓN SOCIAL / NOMBRE: ${cuenta.nombre}\nCUIT: ${cuenta.cuit}\nALIAS: ${cuenta.alias}\nCBU: ${cuenta.cbu}\nN DE CUENTA: ${cuenta.ncuenta}\nBANCO EMISOR: ${cuenta.banco}\n${sep}\nSaludos,\nJoni`;
         navigator.clipboard.writeText(texto).then(() => {
           closeAllMenus();
           btn.classList.add('copied');
