@@ -1208,7 +1208,7 @@
     <!-- Stats -->
     <div class="ov-stats-row">
       <div class="ov-stat">
-        <div class="ov-stat-label">Proyectos activos / del mes</div>
+        <div class="ov-stat-label">En curso / aprobados del mes</div>
         <div class="ov-stat-val" id="ovProyActivos">0</div>
         <div class="ov-stat-sub" id="ovProyActivosSub">este mes</div>
       </div>
@@ -3545,9 +3545,9 @@
 
     // Proyectos del mes actual
     const mesActual = todayStr.slice(0,7);
-    const proySemMes = aprobadas.filter(c => { const f = c.fechaAprobacion||c.fecha||''; return f.startsWith(mesActual); });
-    const proySemMesActivos = proySemMes.filter(c => (c.estadoProyecto||'en-curso') !== 'completado');
-    document.getElementById('ovProyActivos').textContent = proySemMesActivos.length + ' / ' + proySemMes.length;
+    const proySemMes = aprobadas.filter(c => { const f = c.fechaAprobacion||c.fechaEmision||c.fecha||''; return f.startsWith(mesActual); });
+    const proySemMesEnCurso = proySemMes.filter(c => (c.estadoProyecto||'en-curso') === 'en-curso');
+    document.getElementById('ovProyActivos').textContent = proySemMesEnCurso.length + ' / ' + proySemMes.length;
     document.getElementById('ovProyActivosSub').textContent = now.toLocaleString('es-AR',{month:'long',year:'numeric'});
 
     // Facturado este mes
