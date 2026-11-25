@@ -4621,10 +4621,10 @@
     cotizaciones.filter(c=>c.estado==='aprobada').forEach(c=>{
       const brand = [c.agencia, c.empresa].filter(Boolean).join(' · ') || c.marca || '—';
       const _entregas = c.entregas && c.entregas.length ? c.entregas : (c.fechaEntrega ? [{fecha:c.fechaEntrega}] : []);
-      _entregas.filter(e=>e.fecha).forEach((e,eidx) => evs.push({
-        date:e.fecha, type: e.entregado ? 'entregado' : 'entrega',
-        num:c.num||'—', label:brand, c, e, eidx
-      }));
+      _entregas.forEach((e,eidx) => {
+        if(!e.fecha) return;
+        evs.push({ date:e.fecha, type: e.entregado ? 'entregado' : 'entrega', num:c.num||'—', label:brand, c, e, eidx });
+      });
       (c.pagos||[]).forEach((p,pidx)=>{
         if(p.fecha) evs.push({
           date:p.fecha, type:p.cobrado?'cobrado':'pago',
@@ -4696,8 +4696,8 @@
         const past = ev.date < today;
         const tickType = (ev.type==='pago'||ev.type==='cobrado') ? 'pago' : 'entrega';
         const tickData = tickType==='pago'
-          ? `data-pid="${ev.p?.id||''}" data-pidx="${ev.pidx??0}" data-cid="${ev.c.id}"`
-          : `data-eidx="${ev.eidx??0}" data-cid="${ev.c.id}"`;
+          ? `data-pid="${ev.p?.id||''}" data-pidx="${ev.pidx??0}" data-cid="${ev.c.id||''}" data-num="${ev.c.num||''}"`
+          : `data-eidx="${ev.eidx??0}" data-cid="${ev.c.id||''}" data-num="${ev.c.num||''}"`;
         return `<div class="hist-item${done?' hist-done':''}${past&&!done?' hist-past':''}">
           <span class="hist-emoji">${evEmoji(ev.type)}</span>
           <div class="hist-info">
@@ -4712,15 +4712,21 @@
     detail._histClick = function(e){
       const btn = e.target.closest('[data-action="tick-ev"]');
       if(!btn) return;
-      const cidx = cotizaciones.findIndex(x=>x.id===btn.dataset.cid);
-      if(cidx===-1) return;
+      // Buscar cotización por ID, con fallback por número
+      let cidx = cotizaciones.findIndex(x=>x.id===btn.dataset.cid);
+      if(cidx===-1 && btn.dataset.num) cidx = cotizaciones.findIndex(x=>x.num===btn.dataset.num);
+      if(cidx===-1){
+        console.error('[tick] Cotización no encontrada — cid:', btn.dataset.cid, 'num:', btn.dataset.num);
+        showToast('⚠️ No se encontró el proyecto. Recargá la página e intentá de nuevo.');
+        return;
+      }
       if(btn.dataset.ticktype==='pago'){
         const pagos = cotizaciones[cidx].pagos||[];
         let pidx = pagos.findIndex(p=>p.id && p.id===btn.dataset.pid);
         if(pidx===-1) pidx = parseInt(btn.dataset.pidx)||0; // fallback por índice
         if(pidx>=0 && pidx<pagos.length){ pagos[pidx].cobrado=!pagos[pidx].cobrado; cotizaciones[cidx].pagos=pagos; }
       } else {
-        const eidx=parseInt(btn.dataset.eidx)||0;
+        const eidx = parseInt(btn.dataset.eidx)||0;
         if(cotizaciones[cidx].entregas && cotizaciones[cidx].entregas[eidx])
           cotizaciones[cidx].entregas[eidx].entregado=!cotizaciones[cidx].entregas[eidx].entregado;
       }
