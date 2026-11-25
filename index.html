@@ -1295,14 +1295,11 @@
     </div>
 
     <!-- ===== INFORMES ===== -->
-    <div style="margin-top:28px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-        <div class="ov-section-label" style="margin-bottom:0;">Informes</div>
-      </div>
-      <!-- Informes especiales -->
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;" id="ovInformesEspeciales"></div>
-      <!-- Meses disponibles -->
-      <div style="display:flex;gap:8px;flex-wrap:wrap;" id="ovInformesMeses"></div>
+    <div style="margin-top:28px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+      <div class="ov-section-label" style="margin-bottom:0;">Informes</div>
+      <select id="ovInformesSelect" class="filter-select" style="font-size:12px;padding:5px 10px;min-width:180px;">
+        <option value="">Seleccioná un período…</option>
+      </select>
     </div>
 
   </div>
@@ -3982,46 +3979,54 @@
     const years = [2025, 2026];
     const now = new Date();
     const curYM = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+    const sel = document.getElementById('ovInformesSelect');
+    if(!sel) return;
 
-    // Informes especiales
-    const especiales = document.getElementById('ovInformesEspeciales');
-    if(especiales){
-      let btns = '';
-      years.forEach(y => {
-        // Anual
-        const allMonths = Array.from({length:12},(_,i)=>`${y}-${String(i+1).padStart(2,'0')}`);
-        btns += `<button class="informe-btn especial" onclick='openRangeReport("Informe Anual ${y}", ${JSON.stringify(allMonths)})'>📊 Anual ${y}</button>`;
-        // 1er semestre
-        const h1 = Array.from({length:6},(_,i)=>`${y}-${String(i+1).padStart(2,'0')}`);
-        btns += `<button class="informe-btn especial" onclick='openRangeReport("1er Semestre ${y}", ${JSON.stringify(h1)})'>📈 1er sem. ${y}</button>`;
-        // 2do semestre
-        const h2 = Array.from({length:6},(_,i)=>`${y}-${String(i+7).padStart(2,'0')}`);
-        btns += `<button class="informe-btn especial" onclick='openRangeReport("2do Semestre ${y}", ${JSON.stringify(h2)})'>📈 2do sem. ${y}</button>`;
-      });
-      especiales.innerHTML = btns;
-    }
+    // Recolectar meses con datos
+    const mesSet = new Set();
+    HIST_BILLING_2025.forEach((v,i)=>{ if(v>0) mesSet.add(`2025-${String(i+1).padStart(2,'0')}`); });
+    HIST_BILLING_2026.forEach((v,i)=>{ if(v>0) mesSet.add(`2026-${String(i+1).padStart(2,'0')}`); });
+    const normD2 = d=>{ if(!d) return ''; if(/^\d{4}-\d{2}/.test(d)) return d.slice(0,7); if(/^\d{2}\/\d{2}\/\d{4}$/.test(d)){const[dd,mm,yy]=d.split('/');return `${yy}-${mm}`;} return ''; };
+    cotizaciones.filter(c=>c.estado==='aprobada').forEach(c=>{
+      const ym = normD2(c.fechaAprobacion||c.fechaEmision||'');
+      if(ym && ym <= curYM) mesSet.add(ym);
+    });
+    const meses = [...mesSet].filter(ym=>ym<=curYM).sort().reverse();
 
-    // Meses disponibles
-    const mesesEl = document.getElementById('ovInformesMeses');
-    if(mesesEl){
-      // Recolectar todos los meses con datos
-      const mesSet = new Set();
-      // Históricos 2025 y 2026
-      HIST_BILLING_2025.forEach((v,i)=>{ if(v>0) mesSet.add(`2025-${String(i+1).padStart(2,'0')}`); });
-      HIST_BILLING_2026.forEach((v,i)=>{ if(v>0) mesSet.add(`2026-${String(i+1).padStart(2,'0')}`); });
-      // Firebase
-      const normD2 = d=>{ if(!d) return ''; if(/^\d{4}-\d{2}/.test(d)) return d.slice(0,7); if(/^\d{2}\/\d{2}\/\d{4}$/.test(d)){const[dd,mm,yy]=d.split('/');return `${yy}-${mm}`;} return ''; };
-      cotizaciones.filter(c=>c.estado==='aprobada').forEach(c=>{
-        const ref = c.fechaAprobacion||c.fechaEmision||'';
-        const ym = normD2(ref);
-        if(ym && ym <= curYM) mesSet.add(ym);
+    let opts = '<option value="">Seleccioná un período…</option>';
+    // Especiales por año
+    years.forEach(y => {
+      opts += `<optgroup label="─── ${y} ───">`;
+      opts += `<option value="anual-${y}">Informe anual ${y}</option>`;
+      opts += `<option value="h1-${y}">1er semestre ${y} (Ene–Jun)</option>`;
+      opts += `<option value="h2-${y}">2do semestre ${y} (Jul–Dic)</option>`;
+      // Meses de ese año
+      meses.filter(ym=>ym.startsWith(`${y}-`)).forEach(ym=>{
+        const m = parseInt(ym.split('-')[1]);
+        opts += `<option value="mes-${ym}">${NOM_MESES[m-1]} ${y}</option>`;
       });
-      const meses = [...mesSet].filter(ym=>ym<=curYM).sort().reverse();
-      mesesEl.innerHTML = meses.map(ym=>{
-        const [y,m]=ym.split('-').map(Number);
-        return `<button class="informe-btn" onclick='openReport("month","${ym}")'>${NOM_MESES_CORTO[m-1]} ${y}</button>`;
-      }).join('');
-    }
+      opts += '</optgroup>';
+    });
+    sel.innerHTML = opts;
+
+    sel.onchange = () => {
+      const v = sel.value;
+      if(!v) return;
+      if(v.startsWith('mes-')){
+        openReport('month', v.slice(4));
+      } else if(v.startsWith('anual-')){
+        const y = parseInt(v.slice(6));
+        const months = Array.from({length:12},(_,i)=>`${y}-${String(i+1).padStart(2,'0')}`);
+        openRangeReport(`Informe Anual ${y}`, months);
+      } else if(v.startsWith('h1-')){
+        const y = parseInt(v.slice(3));
+        openRangeReport(`1er Semestre ${y}`, Array.from({length:6},(_,i)=>`${y}-${String(i+1).padStart(2,'0')}`));
+      } else if(v.startsWith('h2-')){
+        const y = parseInt(v.slice(3));
+        openRangeReport(`2do Semestre ${y}`, Array.from({length:6},(_,i)=>`${y}-${String(i+7).padStart(2,'0')}`));
+      }
+      sel.value = ''; // resetear el select después de abrir
+    };
   }
 
   function showDailyAlert(){
