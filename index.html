@@ -3974,6 +3974,10 @@
     overlay.onclick = e => { if(e.target === overlay) overlay.style.display = 'none'; };
   }
 
+  // Exponer al scope global para los onclick inline
+  window.openReport = openReport;
+  window.openRangeReport = openRangeReport;
+
   function renderInformes(){
     const years = [2025, 2026];
     const now = new Date();
