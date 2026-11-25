@@ -475,6 +475,46 @@
   .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:#0A0A0A;color:#FFFFFF;padding:12px 20px;border-radius:10px;font-size:13px;box-shadow:0 8px 24px rgba(0,0,0,.25);opacity:0;pointer-events:none;transition:opacity .25s ease,transform .25s ease;z-index:9999;}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
+  /* Botones de informe */
+  .informe-btn{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:6px 12px;font-size:11px;font-weight:600;color:var(--ink);cursor:pointer;transition:border-color .15s,background .15s;white-space:nowrap;}
+  .informe-btn:hover{border-color:var(--cyan);background:var(--cyan-bg);}
+  .informe-btn.especial{border-color:var(--magenta);color:var(--magenta);}
+  .informe-btn.especial:hover{background:var(--magenta-bg);}
+
+  /* Reporte imprimible */
+  .rep-section{margin-bottom:20px;}
+  .rep-section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft);margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--line);}
+  .rep-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;}
+  .rep-card{background:var(--paper-dim);border-radius:10px;padding:12px 14px;}
+  .rep-card-lbl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft);margin-bottom:4px;}
+  .rep-card-val{font-size:18px;font-weight:700;color:var(--ink);}
+  .rep-card-val.green{color:var(--good);}
+  .rep-card-val.red{color:var(--bad);}
+  .rep-table{width:100%;border-collapse:collapse;font-size:12px;}
+  .rep-table th{text-align:left;padding:5px 8px;border-bottom:1px solid var(--line);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-soft);}
+  .rep-table td{padding:6px 8px;border-bottom:1px solid var(--line);color:var(--ink);}
+  .rep-table tr:last-child td{border-bottom:none;}
+  .rep-ep{display:inline-block;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700;}
+  .rep-ep.en-curso{background:#FEF3C7;color:#92400E;}
+  .rep-ep.entregado-nc{background:#FFEDD5;color:#9A3412;}
+  .rep-ep.no-ent-cob{background:#EDE9FE;color:#5B21B6;}
+  .rep-ep.completado{background:#D1FAE5;color:#065F46;}
+  [data-theme="dark"] .rep-ep.en-curso{background:#3D2800;color:#FCD34D;}
+  [data-theme="dark"] .rep-ep.entregado-nc{background:#431407;color:#FDBA74;}
+  [data-theme="dark"] .rep-ep.no-ent-cob{background:#2E1065;color:#C4B5FD;}
+  [data-theme="dark"] .rep-ep.completado{background:#052E16;color:#6EE7B7;}
+  .rep-yoy{display:flex;gap:16px;font-size:12px;margin-top:8px;}
+  .rep-yoy span{color:var(--ink-soft);}
+  .rep-yoy strong{color:var(--ink);}
+
+  /* Print */
+  @media print{
+    body > *{display:none!important;}
+    #printReportContainer{display:block!important;padding:30px;font-family:'Space Grotesk',sans-serif;}
+    #printReportContainer .rep-card{background:#f5f5f5;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    #printReportContainer .rep-ep{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  }
+
   /* ===== MOBILE ===== */
   @media(max-width:640px){
     /* Topbar: fila 1 = VACH* + botones; fila 2 = N° + Fecha */
@@ -1254,6 +1294,17 @@
       </div>
     </div>
 
+    <!-- ===== INFORMES ===== -->
+    <div style="margin-top:28px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div class="ov-section-label" style="margin-bottom:0;">Informes</div>
+      </div>
+      <!-- Informes especiales -->
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;" id="ovInformesEspeciales"></div>
+      <!-- Meses disponibles -->
+      <div style="display:flex;gap:8px;flex-wrap:wrap;" id="ovInformesMeses"></div>
+    </div>
+
   </div>
   </section>
 
@@ -1638,6 +1689,23 @@
 <!-- Print view -->
 <div class="print-view" id="printView"></div>
 <div class="toast" id="toast"></div>
+
+<!-- Modal de Informes -->
+<div id="reportModalOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:10001;align-items:center;justify-content:center;padding:16px;">
+  <div style="background:var(--card);border-radius:16px;box-shadow:0 24px 64px rgba(0,0,0,.35);max-width:680px;width:100%;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;">
+    <div style="padding:16px 20px 12px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+      <div style="font-size:15px;font-weight:700;color:var(--ink);" id="reportModalTitle">Informe</div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button id="reportDownloadBtn" onclick="window.print()" style="background:var(--cyan);color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;">⬇ Descargar PDF</button>
+        <button id="reportModalClose" style="background:none;border:none;cursor:pointer;font-size:22px;color:var(--ink-soft);line-height:1;padding:2px 6px;">×</button>
+      </div>
+    </div>
+    <div id="reportModalBody" style="overflow-y:auto;padding:20px;"></div>
+  </div>
+</div>
+
+<!-- Contenedor de impresión (oculto, solo visible al imprimir) -->
+<div id="printReportContainer" style="display:none;"></div>
 
 <!-- Modal de alertas diarias -->
 <div id="dailyAlertOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:10000;display:none;align-items:center;justify-content:center;padding:16px;">
@@ -2308,8 +2376,10 @@
       try{ renderCalendario(); }catch(e){ console.warn('renderCalendario error:', e); }
       try{ renderProveedores(); }catch(e){}
       try{ renderOverview(); }catch(e){}
+      try{ renderInformes(); }catch(e){}
       try{ updateFirestoreUsage(); }catch(e){}
       try{ showDailyAlert(); }catch(e){}
+      try{ checkLastDayOfMonth(); }catch(e){}
       // Actualizar número de cotización con el último número real
       if(!currentEditId && $('quoteNum')) $('quoteNum').value = nextQuoteNum();
     }, e => {
@@ -3671,6 +3741,285 @@
     return '$' + Math.round(n).toLocaleString('es-AR');
   }
 
+  // =====================================================
+  // SISTEMA DE INFORMES
+  // =====================================================
+
+  const NOM_MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const NOM_MESES_CORTO = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+
+  function getMonthBilling(year, monthIdx){
+    if(year === 2025) return HIST_BILLING_2025[monthIdx]||0;
+    if(year === 2026){
+      if(monthIdx < HIST_2026_CUTOFF) return HIST_BILLING_2026[monthIdx]||0;
+      // Oct-Dic 2026: calcular desde Firebase
+      const mk = `${year}-${String(monthIdx+1).padStart(2,'0')}`;
+      const normD = d=>{ if(!d) return ''; if(/^\d{4}-\d{2}/.test(d)) return d.slice(0,7); if(/^\d{2}\/\d{2}\/\d{4}$/.test(d)){const[dd,mm,yy]=d.split('/');return `${yy}-${mm}`;} return ''; };
+      return cotizaciones.filter(c=>c.estado==='aprobada'&&normD(c.fechaAprobacion||c.fechaEmision||'')===mk).reduce((s,c)=>s+(c.totalAprobado??c.total??0),0);
+    }
+    return 0;
+  }
+  function getMonthPurchases(year, monthIdx){
+    if(year === 2025) return HIST_PURCHASES_2025[monthIdx]||0;
+    if(year === 2026) return HIST_PURCHASES_2026[monthIdx]||0;
+    return 0;
+  }
+
+  function buildMonthReportHTML(yearMonth){
+    const [y, m] = yearMonth.split('-').map(Number);
+    const monthIdx = m - 1;
+    const mesNom = `${NOM_MESES[monthIdx]} ${y}`;
+    const fmt = n => '$' + Math.round(n||0).toLocaleString('es-AR');
+
+    // Datos financieros
+    const billing = getMonthBilling(y, monthIdx);
+    const purchases = getMonthPurchases(y, monthIdx);
+    const ganancia = billing - purchases;
+
+    // Comparativo mes anterior
+    const prevIdx = monthIdx === 0 ? 11 : monthIdx - 1;
+    const prevYear = monthIdx === 0 ? y - 1 : y;
+    const prevBilling = getMonthBilling(prevYear, prevIdx);
+    const diffPrev = prevBilling ? ((billing - prevBilling) / prevBilling * 100).toFixed(0) : null;
+
+    // Comparativo mismo mes año anterior
+    const prevYearBilling = getMonthBilling(y - 1, monthIdx);
+    const diffYoY = prevYearBilling ? ((billing - prevYearBilling) / prevYearBilling * 100).toFixed(0) : null;
+
+    // Proyectos del mes (Firebase)
+    const normD = d=>{ if(!d) return ''; if(/^\d{4}-\d{2}-\d{2}/.test(d)) return d.slice(0,10); if(/^\d{2}\/\d{2}\/\d{4}$/.test(d)){const[dd,mm,yy]=d.split('/');return `${yy}-${mm}-${dd}`;} return d; };
+    const firstD = c=>{ for(const e of (c.entregas||[])){const d=normD(e.fecha);if(d)return d;} for(const p of (c.pagos||[])){const d=normD(p.fecha);if(d)return d;} return ''; };
+    const fechaRef = c => normD(c.fechaAprobacion)||normD(c.fechaEmision)||firstD(c);
+    const proyMes = cotizaciones.filter(c=>c.estado==='aprobada'&&fechaRef(c).startsWith(yearMonth));
+
+    const countEP = ep => proyMes.filter(c=>(c.estadoProyecto||'en-curso')===ep).length;
+    const totalFactProyMes = proyMes.reduce((s,c)=>s+(c.totalAprobado??c.total??0),0);
+
+    // Pendientes de cobro
+    const pendientes = [];
+    cotizaciones.filter(c=>c.estado==='aprobada'&&(c.estadoProyecto||'en-curso')!=='completado').forEach(c=>{
+      const total = c.totalAprobado??c.total??0;
+      const pend = (c.pagos||[]).filter(p=>!p.cobrado&&(p.porcentaje||0)>0).reduce((s,p)=>s+total*(p.porcentaje||0)/100,0);
+      if(pend>0) pendientes.push({nombre:[c.agencia,c.empresa].filter(Boolean).join(' / ')||c.marca||'Sin nombre',cot:c.num,monto:pend,ep:c.estadoProyecto||'en-curso'});
+    });
+    pendientes.sort((a,b)=>b.monto-a.monto);
+    const totalPend = pendientes.reduce((s,p)=>s+p.monto,0);
+
+    // Top agencias
+    const agMap = {};
+    proyMes.forEach(c=>{
+      const ag = c.agencia||'Sin agencia';
+      if(!agMap[ag]) agMap[ag]={count:0,total:0};
+      agMap[ag].count++;
+      agMap[ag].total += (c.totalAprobado??c.total??0);
+    });
+    const topAg = Object.entries(agMap).sort((a,b)=>b[1].total-a[1].total).slice(0,5);
+
+    const arrowHtml = v => v === null ? '—' : `<span style="color:${v>=0?'#059669':'#dc2626'};font-weight:700">${v>=0?'▲':'▼'}${Math.abs(v)}%</span>`;
+    const epLabel = {'en-curso':'En curso','entregado-nc':'Entregado / NC','no-ent-cob':'No ent. / cobrado','completado':'Completado'};
+
+    return `
+    <div class="rep-section">
+      <div style="font-size:11px;color:var(--ink-soft);margin-bottom:14px;">Generado el ${new Date().toLocaleDateString('es-AR',{day:'numeric',month:'long',year:'numeric'})}</div>
+      <div class="rep-cards">
+        <div class="rep-card"><div class="rep-card-lbl">Facturado</div><div class="rep-card-val green">${fmt(billing)}</div></div>
+        <div class="rep-card"><div class="rep-card-lbl">Compras</div><div class="rep-card-val red">${fmt(purchases)}</div></div>
+        <div class="rep-card"><div class="rep-card-lbl">Ganancia neta</div><div class="rep-card-val" style="color:${ganancia>=0?'var(--good)':'var(--bad)'}">${fmt(ganancia)}</div></div>
+      </div>
+      <div class="rep-yoy">
+        <div><span>vs mes anterior: </span>${arrowHtml(diffPrev)}</div>
+        <div><span>vs ${NOM_MESES_CORTO[monthIdx]} ${y-1}: </span>${arrowHtml(diffYoY)}</div>
+      </div>
+    </div>
+
+    <div class="rep-section">
+      <div class="rep-section-title">Proyectos del mes (${proyMes.length} aprobados · ${fmt(totalFactProyMes)})</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
+        ${['en-curso','entregado-nc','no-ent-cob','completado'].map(ep=>`<div style="font-size:11px;padding:3px 10px;border-radius:6px;background:var(--paper-dim)"><strong>${countEP(ep)}</strong> ${epLabel[ep]}</div>`).join('')}
+      </div>
+      ${proyMes.length ? `<table class="rep-table">
+        <thead><tr><th>Nº</th><th>Agencia / Empresa</th><th>Producto</th><th>Total</th><th>Estado</th></tr></thead>
+        <tbody>${proyMes.sort((a,b)=>(a.num||'').localeCompare(b.num||'')).map(c=>`
+          <tr>
+            <td style="color:var(--ink-soft);white-space:nowrap">${escHtml(c.num||'—')}</td>
+            <td>${escHtml([c.agencia,c.empresa].filter(Boolean).join(' / ')||c.marca||'—')}</td>
+            <td style="font-size:11px;color:var(--ink-soft)">${escHtml((c.descripcion||c.productos?.map(p=>p.nombre).join(', ')||'—').slice(0,50))}</td>
+            <td style="white-space:nowrap;text-align:right">${fmt(c.totalAprobado??c.total??0)}</td>
+            <td><span class="rep-ep ${c.estadoProyecto||'en-curso'}">${epLabel[c.estadoProyecto||'en-curso']}</span></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>` : '<div style="font-size:12px;color:var(--ink-soft)">Sin proyectos registrados en este mes.</div>'}
+    </div>
+
+    ${topAg.length ? `<div class="rep-section">
+      <div class="rep-section-title">Top agencias / clientes</div>
+      <table class="rep-table">
+        <thead><tr><th>Agencia</th><th>Proyectos</th><th>Total facturado</th></tr></thead>
+        <tbody>${topAg.map(([ag,d])=>`<tr><td>${escHtml(ag)}</td><td style="text-align:center">${d.count}</td><td style="text-align:right">${fmt(d.total)}</td></tr>`).join('')}</tbody>
+      </table>
+    </div>` : ''}
+
+    ${pendientes.length ? `<div class="rep-section">
+      <div class="rep-section-title">Pendiente de cobro — ${fmt(totalPend)}</div>
+      <table class="rep-table">
+        <thead><tr><th>Cliente</th><th>Nº</th><th>Monto pendiente</th><th>Estado</th></tr></thead>
+        <tbody>${pendientes.slice(0,10).map(p=>`<tr><td>${escHtml(p.nombre)}</td><td style="color:var(--ink-soft)">${escHtml(p.cot||'—')}</td><td style="text-align:right">${fmt(p.monto)}</td><td><span class="rep-ep ${p.ep}">${epLabel[p.ep]}</span></td></tr>`).join('')}</tbody>
+      </table>
+      ${pendientes.length>10?`<div style="font-size:11px;color:var(--ink-soft);margin-top:6px;text-align:center">y ${pendientes.length-10} más...</div>`:''}
+    </div>` : ''}`;
+  }
+
+  function buildRangeReportHTML(label, months){
+    // months: array de 'YYYY-MM'
+    const fmt = n => '$' + Math.round(n||0).toLocaleString('es-AR');
+    let totalBilling = 0, totalPurchases = 0;
+    const billingByMonth = [];
+    months.forEach(ym => {
+      const [y,m] = ym.split('-').map(Number);
+      const b = getMonthBilling(y, m-1);
+      const p = getMonthPurchases(y, m-1);
+      totalBilling += b;
+      totalPurchases += p;
+      billingByMonth.push({ym, b, p});
+    });
+    const ganancia = totalBilling - totalPurchases;
+
+    const normD = d=>{ if(!d) return ''; if(/^\d{4}-\d{2}-\d{2}/.test(d)) return d.slice(0,10); if(/^\d{2}\/\d{2}\/\d{4}$/.test(d)){const[dd,mm,yy]=d.split('/');return `${yy}-${mm}-${dd}`;} return d; };
+    const firstD = c=>{ for(const e of (c.entregas||[])){const d=normD(e.fecha);if(d)return d;} for(const p of (c.pagos||[])){const d=normD(p.fecha);if(d)return d;} return ''; };
+    const fechaRef = c => normD(c.fechaAprobacion)||normD(c.fechaEmision)||firstD(c);
+    const proyPeriodo = cotizaciones.filter(c=>c.estado==='aprobada'&&months.includes(fechaRef(c).slice(0,7)));
+    const totalProy = proyPeriodo.reduce((s,c)=>s+(c.totalAprobado??c.total??0),0);
+
+    const agMap = {};
+    proyPeriodo.forEach(c=>{
+      const ag = c.agencia||'Sin agencia';
+      if(!agMap[ag]) agMap[ag]={count:0,total:0};
+      agMap[ag].count++;
+      agMap[ag].total += (c.totalAprobado??c.total??0);
+    });
+    const topAg = Object.entries(agMap).sort((a,b)=>b[1].total-a[1].total).slice(0,8);
+
+    return `
+    <div class="rep-section">
+      <div style="font-size:11px;color:var(--ink-soft);margin-bottom:14px;">Generado el ${new Date().toLocaleDateString('es-AR',{day:'numeric',month:'long',year:'numeric'})}</div>
+      <div class="rep-cards">
+        <div class="rep-card"><div class="rep-card-lbl">Facturado total</div><div class="rep-card-val green">${fmt(totalBilling)}</div></div>
+        <div class="rep-card"><div class="rep-card-lbl">Compras total</div><div class="rep-card-val red">${fmt(totalPurchases)}</div></div>
+        <div class="rep-card"><div class="rep-card-lbl">Ganancia neta</div><div class="rep-card-val" style="color:${ganancia>=0?'var(--good)':'var(--bad)'}">${fmt(ganancia)}</div></div>
+      </div>
+    </div>
+
+    <div class="rep-section">
+      <div class="rep-section-title">Desglose mensual</div>
+      <table class="rep-table">
+        <thead><tr><th>Mes</th><th style="text-align:right">Facturado</th><th style="text-align:right">Compras</th><th style="text-align:right">Ganancia</th></tr></thead>
+        <tbody>${billingByMonth.map(({ym,b,p})=>{
+          const [y,m]=ym.split('-').map(Number);
+          const g=b-p;
+          return `<tr><td>${NOM_MESES[m-1]} ${y}</td><td style="text-align:right">${fmt(b)}</td><td style="text-align:right;color:var(--bad)">${fmt(p)}</td><td style="text-align:right;color:${g>=0?'var(--good)':'var(--bad)'}">${fmt(g)}</td></tr>`;
+        }).join('')}</tbody>
+      </table>
+    </div>
+
+    <div class="rep-section">
+      <div class="rep-section-title">Proyectos del período (${proyPeriodo.length} · ${fmt(totalProy)})</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
+        ${['en-curso','entregado-nc','no-ent-cob','completado'].map(ep=>{
+          const n=proyPeriodo.filter(c=>(c.estadoProyecto||'en-curso')===ep).length;
+          const lbl={'en-curso':'En curso','entregado-nc':'Entregado / NC','no-ent-cob':'No ent. / cobrado','completado':'Completado'}[ep];
+          return `<div style="font-size:11px;padding:3px 10px;border-radius:6px;background:var(--paper-dim)"><strong>${n}</strong> ${lbl}</div>`;
+        }).join('')}
+      </div>
+    </div>
+
+    ${topAg.length ? `<div class="rep-section">
+      <div class="rep-section-title">Top agencias / clientes del período</div>
+      <table class="rep-table">
+        <thead><tr><th>Agencia</th><th>Proyectos</th><th style="text-align:right">Total facturado</th></tr></thead>
+        <tbody>${topAg.map(([ag,d])=>`<tr><td>${escHtml(ag)}</td><td style="text-align:center">${d.count}</td><td style="text-align:right">${fmt(d.total)}</td></tr>`).join('')}</tbody>
+      </table>
+    </div>` : ''}`;
+  }
+
+  function openReport(type, key){
+    let title, html;
+    if(type === 'month'){
+      const [y,m] = key.split('-').map(Number);
+      title = `Informe ${NOM_MESES[m-1]} ${y}`;
+      html = buildMonthReportHTML(key);
+    } else {
+      title = key; // key is already a label for range reports
+      html = key._html; // passed directly
+    }
+    document.getElementById('reportModalTitle').textContent = title;
+    document.getElementById('reportModalBody').innerHTML = html;
+    // Para imprimir: copiar al contenedor de impresión
+    document.getElementById('printReportContainer').innerHTML =
+      `<h1 style="font-size:20px;font-weight:700;margin-bottom:4px;color:#000">${title}</h1>` + html;
+    const overlay = document.getElementById('reportModalOverlay');
+    overlay.style.display = 'flex';
+    document.getElementById('reportModalClose').onclick = () => { overlay.style.display = 'none'; };
+    overlay.onclick = e => { if(e.target === overlay) overlay.style.display = 'none'; };
+  }
+
+  function openRangeReport(label, months){
+    const html = buildRangeReportHTML(label, months);
+    document.getElementById('reportModalTitle').textContent = label;
+    document.getElementById('reportModalBody').innerHTML = html;
+    document.getElementById('printReportContainer').innerHTML =
+      `<h1 style="font-size:20px;font-weight:700;margin-bottom:4px;color:#000">${label}</h1>` + html;
+    const overlay = document.getElementById('reportModalOverlay');
+    overlay.style.display = 'flex';
+    document.getElementById('reportModalClose').onclick = () => { overlay.style.display = 'none'; };
+    overlay.onclick = e => { if(e.target === overlay) overlay.style.display = 'none'; };
+  }
+
+  function renderInformes(){
+    const years = [2025, 2026];
+    const now = new Date();
+    const curYM = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+
+    // Informes especiales
+    const especiales = document.getElementById('ovInformesEspeciales');
+    if(especiales){
+      let btns = '';
+      years.forEach(y => {
+        // Anual
+        const allMonths = Array.from({length:12},(_,i)=>`${y}-${String(i+1).padStart(2,'0')}`);
+        btns += `<button class="informe-btn especial" onclick='openRangeReport("Informe Anual ${y}", ${JSON.stringify(allMonths)})'>📊 Anual ${y}</button>`;
+        // 1er semestre
+        const h1 = Array.from({length:6},(_,i)=>`${y}-${String(i+1).padStart(2,'0')}`);
+        btns += `<button class="informe-btn especial" onclick='openRangeReport("1er Semestre ${y}", ${JSON.stringify(h1)})'>📈 1er sem. ${y}</button>`;
+        // 2do semestre
+        const h2 = Array.from({length:6},(_,i)=>`${y}-${String(i+7).padStart(2,'0')}`);
+        btns += `<button class="informe-btn especial" onclick='openRangeReport("2do Semestre ${y}", ${JSON.stringify(h2)})'>📈 2do sem. ${y}</button>`;
+      });
+      especiales.innerHTML = btns;
+    }
+
+    // Meses disponibles
+    const mesesEl = document.getElementById('ovInformesMeses');
+    if(mesesEl){
+      // Recolectar todos los meses con datos
+      const mesSet = new Set();
+      // Históricos 2025 y 2026
+      HIST_BILLING_2025.forEach((v,i)=>{ if(v>0) mesSet.add(`2025-${String(i+1).padStart(2,'0')}`); });
+      HIST_BILLING_2026.forEach((v,i)=>{ if(v>0) mesSet.add(`2026-${String(i+1).padStart(2,'0')}`); });
+      // Firebase
+      const normD2 = d=>{ if(!d) return ''; if(/^\d{4}-\d{2}/.test(d)) return d.slice(0,7); if(/^\d{2}\/\d{2}\/\d{4}$/.test(d)){const[dd,mm,yy]=d.split('/');return `${yy}-${mm}`;} return ''; };
+      cotizaciones.filter(c=>c.estado==='aprobada').forEach(c=>{
+        const ref = c.fechaAprobacion||c.fechaEmision||'';
+        const ym = normD2(ref);
+        if(ym && ym <= curYM) mesSet.add(ym);
+      });
+      const meses = [...mesSet].filter(ym=>ym<=curYM).sort().reverse();
+      mesesEl.innerHTML = meses.map(ym=>{
+        const [y,m]=ym.split('-').map(Number);
+        return `<button class="informe-btn" onclick='openReport("month","${ym}")'>${NOM_MESES_CORTO[m-1]} ${y}</button>`;
+      }).join('');
+    }
+  }
+
   function showDailyAlert(){
     const todayKey = new Date().toISOString().slice(0,10);
     if(localStorage.getItem('vach_alert_shown') === todayKey) return; // ya se mostró hoy
@@ -3754,6 +4103,23 @@
     };
     document.getElementById('dailyAlertClose').onclick = close;
     overlay.addEventListener('click', e => { if(e.target === overlay) close(); }, { once: true });
+  }
+
+  function checkLastDayOfMonth(){
+    const now = new Date();
+    const tomorrow = new Date(now); tomorrow.setDate(now.getDate()+1);
+    if(tomorrow.getMonth() === now.getMonth()) return; // no es el último día
+    const todayKey = now.toISOString().slice(0,10);
+    if(localStorage.getItem('vach_informe_shown') === todayKey) return; // ya se mostró hoy
+    // Es el último día del mes → mostrar informe del mes
+    const ym = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+    setTimeout(()=>{
+      openReport('month', ym);
+      localStorage.setItem('vach_informe_shown', todayKey);
+      // Agregar botón "Ver informe" en el modal title
+      const title = document.getElementById('reportModalTitle');
+      if(title) title.textContent = `📋 Informe de cierre — ${NOM_MESES[now.getMonth()]} ${now.getFullYear()}`;
+    }, 1500); // pequeño delay para que cargue la UI primero
   }
 
   let _ovLastBilling = null, _ovLastJobs = null, _ovLastMonth = -1;
