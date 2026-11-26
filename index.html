@@ -239,7 +239,7 @@
   .hist-emoji{font-size:16px;flex-shrink:0;width:22px;text-align:center;}
   .hist-info{flex:1;min-width:0;}
   .hist-brand{font-size:12.5px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .hist-date{font-size:11px;color:var(--ink-soft);margin-top:1px;}
+  .hist-date{font-size:11px;color:var(--ink-soft);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .hist-tick{background:none;border:1.5px solid var(--line);border-radius:50%;width:24px;height:24px;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:border-color .15s,background .15s,color .15s;color:var(--ink-soft);}
   .hist-tick:hover{border-color:var(--good);color:var(--good);}
   .hist-tick.hist-ticked{border-color:var(--good);background:var(--good);color:#fff;font-weight:700;}
@@ -3975,6 +3975,31 @@
   window.openReport = openReport;
   window.openRangeReport = openRangeReport;
 
+  // Tick de entregas/pagos desde el calendario
+  window.doTickCalEvent = function(tickType, cid, num, pidx, pid, eidx){
+    let cidx = cotizaciones.findIndex(x=>x.id===cid);
+    if(cidx===-1 && num) cidx = cotizaciones.findIndex(x=>x.num===num);
+    if(cidx===-1){
+      console.error('[tick] No se encontró cotización — cid:', cid, 'num:', num);
+      showToast('⚠️ No se encontró el proyecto. Recargá la página e intentá de nuevo.');
+      return;
+    }
+    if(tickType==='pago'){
+      const pagos = cotizaciones[cidx].pagos||[];
+      let pi = pagos.findIndex(p=>p.id && p.id===pid);
+      if(pi===-1) pi = pidx;
+      if(pi>=0 && pi<pagos.length){ pagos[pi].cobrado=!pagos[pi].cobrado; cotizaciones[cidx].pagos=pagos; }
+    } else {
+      if(cotizaciones[cidx].entregas && cotizaciones[cidx].entregas[eidx])
+        cotizaciones[cidx].entregas[eidx].entregado=!cotizaciones[cidx].entregas[eidx].entregado;
+    }
+    autoUpdateEstadoProyecto(cidx);
+    saveCotizaciones(cotizaciones);
+    renderCalendario();
+    try{renderAprobados();}catch(err){}
+    try{updateContStats();}catch(err){}
+  };
+
   function renderInformes(){
     const years = [2025, 2026];
     const now = new Date();
@@ -4695,48 +4720,22 @@
         const done = ev.type==='cobrado'||ev.type==='entregado';
         const past = ev.date < today;
         const tickType = (ev.type==='pago'||ev.type==='cobrado') ? 'pago' : 'entrega';
-        const tickData = tickType==='pago'
-          ? `data-pid="${ev.p?.id||''}" data-pidx="${ev.pidx??0}" data-cid="${ev.c.id||''}" data-num="${ev.c.num||''}"`
-          : `data-eidx="${ev.eidx??0}" data-cid="${ev.c.id||''}" data-num="${ev.c.num||''}"`;
+        const cid = (ev.c.id||'').replace(/'/g,"\\'");
+        const num = (ev.c.num||'').replace(/'/g,"\\'");
+        const onclickAttr = tickType==='pago'
+          ? `window.doTickCalEvent('pago','${cid}','${num}',${ev.pidx??0},'${(ev.p?.id||'').replace(/'/g,"\\'")}',0)`
+          : `window.doTickCalEvent('entrega','${cid}','${num}',0,'',${ev.eidx??0})`;
         return `<div class="hist-item${done?' hist-done':''}${past&&!done?' hist-past':''}">
           <span class="hist-emoji">${evEmoji(ev.type)}</span>
           <div class="hist-info">
             <div class="hist-brand">${escHtml(ev.label)}</div>
             <div class="hist-date">${d}/${m}/${y}${ev.pct?` · ${ev.pct}% · $ ${fmt.format(Math.round(ev.amt))}`:''}</div>
           </div>
-          <button class="hist-tick${done?' hist-ticked':''}" data-action="tick-ev" data-ticktype="${tickType}" ${tickData}>✓</button>
+          <button class="hist-tick${done?' hist-ticked':''}" onclick="${onclickAttr}" type="button">✓</button>
         </div>`;
       }).join('');
 
-    detail._histClick && detail.removeEventListener('click', detail._histClick);
-    detail._histClick = function(e){
-      const btn = e.target.closest('[data-action="tick-ev"]');
-      if(!btn) return;
-      // Buscar cotización por ID, con fallback por número
-      let cidx = cotizaciones.findIndex(x=>x.id===btn.dataset.cid);
-      if(cidx===-1 && btn.dataset.num) cidx = cotizaciones.findIndex(x=>x.num===btn.dataset.num);
-      if(cidx===-1){
-        console.error('[tick] Cotización no encontrada — cid:', btn.dataset.cid, 'num:', btn.dataset.num);
-        showToast('⚠️ No se encontró el proyecto. Recargá la página e intentá de nuevo.');
-        return;
-      }
-      if(btn.dataset.ticktype==='pago'){
-        const pagos = cotizaciones[cidx].pagos||[];
-        let pidx = pagos.findIndex(p=>p.id && p.id===btn.dataset.pid);
-        if(pidx===-1) pidx = parseInt(btn.dataset.pidx)||0; // fallback por índice
-        if(pidx>=0 && pidx<pagos.length){ pagos[pidx].cobrado=!pagos[pidx].cobrado; cotizaciones[cidx].pagos=pagos; }
-      } else {
-        const eidx = parseInt(btn.dataset.eidx)||0;
-        if(cotizaciones[cidx].entregas && cotizaciones[cidx].entregas[eidx])
-          cotizaciones[cidx].entregas[eidx].entregado=!cotizaciones[cidx].entregas[eidx].entregado;
-      }
-      autoUpdateEstadoProyecto(cidx);
-      saveCotizaciones(cotizaciones);
-      renderCalendario();
-      try{renderAprobados();}catch(err){}
-      try{updateContStats();}catch(err){}
-    };
-    detail.addEventListener('click', detail._histClick);
+    // Sin event delegation — cada botón llama window.doTickCalEvent(this) directamente
   }
 
   function renderCalProjects(){
