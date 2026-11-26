@@ -1255,6 +1255,7 @@
     <div class="ov-stats-row">
       <div class="ov-stat">
         <div class="ov-stat-label">En curso / aprobados del mes</div>
+        <!-- en curso = total activos; aprobados = solo mes actual -->
         <div class="ov-stat-val" id="ovProyActivos">0</div>
         <div class="ov-stat-sub" id="ovProyActivosSub">este mes</div>
       </div>
@@ -3639,8 +3640,8 @@
     const firstDOv = c => { for(const e of (c.entregas||[])){ const d=normDOv(e.fecha); if(d) return d; } for(const p of (c.pagos||[])){ const d=normDOv(p.fecha); if(d) return d; } return ''; };
     const fechaRefOv = c => normDOv(c.fechaAprobacion) || normDOv(c.fechaEmision) || firstDOv(c);
     const proySemMes = aprobadas.filter(c => fechaRefOv(c).startsWith(mesActual));
-    const proySemMesEnCurso = proySemMes.filter(c => (c.estadoProyecto||'en-curso') === 'en-curso');
-    document.getElementById('ovProyActivos').textContent = proySemMesEnCurso.length + ' / ' + proySemMes.length;
+    const enCursoTotal = aprobadas.filter(c => (c.estadoProyecto||'en-curso') === 'en-curso').length;
+    document.getElementById('ovProyActivos').textContent = enCursoTotal + ' / ' + proySemMes.length;
     document.getElementById('ovProyActivosSub').textContent = now.toLocaleString('es-AR',{month:'long',year:'numeric'});
 
     // Facturado este mes
