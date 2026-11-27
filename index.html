@@ -2875,19 +2875,8 @@
         const entregasTxt = entregas.length === 1
           ? `Fecha de entrega: ${fmtFechaCopy(entregas[0].fecha)}`
           : entregas.map((e,i)=>`Entrega ${i+1}: ${fmtFechaCopy(e.fecha)}`).join('\n');
-        const pagosTxtH = pagos.length === 1
-          ? `<b>Fecha de pago:</b> ${fmtFechaCopy(pagos[0].fecha)}`
-          : pagos.map((p,i)=>`<b>Pago ${i+1}:</b> ${fmtFechaCopy(p.fecha)} ($${fmt.format(Math.round((p.porcentaje||0)/100*total))})`).join('<br>');
-        const entregasTxtH = entregas.length === 1
-          ? `<b>Fecha de entrega:</b> ${fmtFechaCopy(entregas[0].fecha)}`
-          : entregas.map((e,i)=>`<b>Entrega ${i+1}:</b> ${fmtFechaCopy(e.fecha)}`).join('<br>');
-        const html = `Hola, buenos días! ¿Cómo estás? Adjunto a continuación la factura y datos para la transferencia; por favor compartir el comprobante una vez realizado el pago.<br><br>${sep}<br><b>Factura:</b> ${c.numFactura||'—'}<br><b>Monto:</b> $${fmt.format(Math.round(total))} .-<br>${pagosTxtH}<br>${entregasTxtH}<br><br>${sep}<br><b>RAZÓN SOCIAL / NOMBRE:</b> ${cuenta.nombre}<br><b>CUIT:</b> ${cuenta.cuit}<br><b>ALIAS:</b> ${cuenta.alias}<br><b>CBU:</b> ${cuenta.cbu}<br><b>N DE CUENTA:</b> ${cuenta.ncuenta}<br><b>BANCO EMISOR:</b> ${cuenta.banco}<br><br>${sep}<br>Saludos,<br>Joni`;
         const texto = `Hola, buenos días! ¿Cómo estás?\n\nAdjunto a continuación la factura y datos para la transferencia; por favor compartir el comprobante una vez realizado el pago.\n${sep}\nFactura: ${c.numFactura||'—'}\nMonto: $${fmt.format(Math.round(total))} .-\n${pagosTxt}\n${entregasTxt}\n${sep}\nRAZÓN SOCIAL / NOMBRE: ${cuenta.nombre}\nCUIT: ${cuenta.cuit}\nALIAS: ${cuenta.alias}\nCBU: ${cuenta.cbu}\nN DE CUENTA: ${cuenta.ncuenta}\nBANCO EMISOR: ${cuenta.banco}\n${sep}\nSaludos,\nJoni`;
-        try {
-          await navigator.clipboard.write([new ClipboardItem({'text/html':new Blob([html],{type:'text/html'}),'text/plain':new Blob([texto],{type:'text/plain'})})]);
-        } catch(e) {
-          await navigator.clipboard.writeText(texto);
-        }
+        await navigator.clipboard.writeText(texto);
         closeAllMenus();
         btn.classList.add('copied');
         btn.textContent = '✓ Copiado';
