@@ -2875,12 +2875,6 @@
         const entregasTxt = entregas.length === 1
           ? `Fecha de entrega: ${fmtFechaCopy(entregas[0].fecha)}`
           : entregas.map((e,i)=>`Entrega ${i+1}: ${fmtFechaCopy(e.fecha)}`).join('\n');
-        const pagosTxtH = pagos.length === 1
-          ? `Fecha de pago: ${fmtFechaCopy(pagos[0].fecha)}`
-          : pagos.map((p,i)=>`Pago ${i+1}: ${fmtFechaCopy(p.fecha)} ($${fmt.format(Math.round((p.porcentaje||0)/100*total))})`).join('<br>');
-        const entregasTxtH = entregas.length === 1
-          ? `Fecha de entrega: ${fmtFechaCopy(entregas[0].fecha)}`
-          : entregas.map((e,i)=>`Entrega ${i+1}: ${fmtFechaCopy(e.fecha)}`).join('<br>');
         const sepP = `<p style="margin:2px 0">${sep}</p>`;
         const pagosTxtH = pagos.length === 1
           ? `<b>Fecha de pago:</b> ${fmtFechaCopy(pagos[0].fecha)}`
